@@ -88,7 +88,7 @@ def KFold(D, L, K, model, p, Cfn, Cfp, seed=27):
     So = np.zeros(S.shape)
 
     for i in range(D.shape[1]):
-        So[:, idx[i]] = S[:, i]
+        So[idx[i]] = S[i]
 
     p_labels=predict_labels(np.array(So, dtype=np.float32), t)
 
