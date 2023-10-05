@@ -60,7 +60,7 @@ if __name__ == '__main__':
     dtr, ltr = load("Train.txt")
     dte, lte = load("Test.txt")
     
-    Prior = np.ones((2, 1))*0.5
+    Prior = 0.5
     s_matrix= mvg_loglikelihood_domain(dtr, ltr, dte)
     #compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/MVG_Results.txt", MVG_log_likelihood_domain)
     #compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/TVG_Results.txt", TVG_log_likelihood_domain)
