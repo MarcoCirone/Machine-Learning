@@ -1,17 +1,18 @@
+import numpy
 import numpy as np
 import math
 
 def load(file):
-    D = []
-    L = []
+    d = []
+    l = []
     with open(file, "r") as f:
         for line in f:
             attributes = line.split(",")[:-1:1]
-            properties = mcol(np.array([float (i) for i in attributes]))
-            D.append(properties)
+            properties = mcol(np.array([float(i) for i in attributes]))
+            d.append(properties)
             label = line.split(",")[-1].replace("\n", "")
-            L.append(label)
-    return np.hstack(D), np.array(L, dtype = np.int32)
+            l.append(label)
+    return np.hstack(d), np.array(l, dtype=np.int32)
 
 def mcol(v):
     return v.reshape((v.size, 1))
@@ -20,15 +21,13 @@ def mrow(v):
     return v.reshape([1, v.size])
 
 
-
-
 def logpdf_GAU_ND_col(sample, mu, cov):
-    xc = sample - mu #center sample
+    xc = sample - mu        # center sample
 
-    n_dim = sample.shape[0] #number of dimensions
+    n_dim = sample.shape[0]     # number of dimensions
     const = n_dim * np.log(2 * np.pi)
-    logdet = np.linalg.slogdet(cov)[1]  # determinante
-    prec_mat = np.linalg.inv(cov) #precision matrix
+    logdet = np.linalg.slogdet(cov)[1]      # determinant
+    prec_mat = np.linalg.inv(cov)       # precision matrix
     v = np.dot(xc.T, np.dot(prec_mat, xc))
     return -0.5 * const - 0.5 * logdet - 0.5 * v
 
@@ -41,73 +40,92 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def KFold(D, L, K, model, p, Cfn, Cfp, seed=27):
-    t=-np.log(p*Cfn/((1-p)*Cfp))
+def k_fold(d, l, k, model, p, cfn, cfp, seed=27):
 
-    nTest = math.ceil(D.shape[1] / K)
+    n_test = math.ceil(d.shape[1]/k)
 
-    K = math.ceil(D.shape[1] / nTest)
+    k = math.ceil(d.shape[1] / n_test)
 
     np.random.seed(seed)  # se eseguo il codice 2 volte il risultato non cambia
-    idx = np.random.permutation(D.shape[1])
+    idx = np.random.permutation(d.shape[1])
 
-    RD = D[:, idx]  # reordered dataset
-    RL = L[idx]  # reodered labels
+    rd = d[:, idx]  # reordered dataset
+    rl = l[idx]  # reodered labels
 
     start = 0
-    stop = nTest
+    stop = n_test
 
-    S = []
+    score = []
 
-    for k in range(K):
+    for ki in range(k):
         # print(f"Iterazione {k}")
 
         # DEFINIZIONE TEST SET
-        iTest = range(start, stop, 1)
-        DTE = RD[:, iTest]
-        LTE = RL[iTest]
+        i_test = range(start, stop, 1)
+        dte = rd[:, i_test]
 
         # DEFINIZIONE TRAINING SET
-        iTrain = []
-        for i in range(RD.shape[1]):
-            if i not in iTest:
-                iTrain.append(i)
-        DTR = RD[:, iTrain]
-        LTR = RL[iTrain]
+        i_train = []
+        for i in range(rd.shape[1]):
+            if i not in i_test:
+                i_train.append(i)
+        dtr = rd[:, i_train]
+        ltr = rl[i_train]
 
-        S.append(model(DTR, LTR, DTE))
+        score.append(model(dtr, ltr, dte))
 
-        start += nTest
-        stop += nTest
+        start += n_test
+        stop += n_test
 
-        if stop > D.shape[1]:
-            stop = D.shape[1]
+        if stop > d.shape[1]:
+            stop = d.shape[1]
 
-    S = np.hstack(S)
+    score = np.hstack(score)
 
-    So = np.zeros(S.shape)
+    preshuffle_score = numpy.zeros(score.shape)
+    for i in range(d.shape[1]):
+        preshuffle_score[idx[i]] = score[i]
 
-    for i in range(D.shape[1]):
-        So[idx[i]] = S[i]
+    ordered_score = np.sort(score)
+    all_dcf = np.zeros(score.shape)
 
-    p_labels=predict_labels(np.array(So, dtype=np.float32), t)
+    for i in range(ordered_score.shape[0]):
+        th = ordered_score[i]
+        pl = predict_labels(preshuffle_score, th)
+        conf_matrix = get_confusion_matrix(pl, l, l.max() + 1)
 
-    conf_matrix=getConfusionMatrix(p_labels, L, L.max()+1)
+        all_dcf[i] = compute_dcf(conf_matrix, cfn, cfp, p)
 
-    return conf_matrix
+    return all_dcf.min()
 
 def predict_labels(scores, th):
-    labels=np.zeros(scores.shape[0])
+    labels = np.zeros(scores.shape[0])
     for i in range(scores.shape[0]):
-        if scores[i]>th:
-            labels[i]+=1
+        if scores[i] > th:
+            labels[i] += 1
     return np.array(labels, dtype=np.int32)
 
 
-def getConfusionMatrix(PL, AL, size):  # predicted and actual labels
+def get_confusion_matrix(pl, al, size):  # predicted and actual labels
     conf_matrix = np.zeros([size, size])
 
-    for i in range(PL.shape[0]):
-        conf_matrix[PL[i], AL[i]] += 1
+    for i in range(pl.shape[0]):
+        conf_matrix[pl[i], al[i]] += 1
 
     return conf_matrix
+
+
+def dcf_normalized(dcfu, pi, cfn, cfp):
+    dcf1 = cfn * pi
+    dcf2 = cfp * (1 - pi)
+
+    if dcf1 < dcf2:
+        return dcfu / dcf1
+    return dcfu / dcf2
+
+
+def compute_dcf(confusion_matrix, cfn, cfp, p):
+    fnr = confusion_matrix[0, 1] / confusion_matrix[:, 1].sum()
+    fpr = confusion_matrix[1, 0] / confusion_matrix[:, 0].sum()
+    dcfu = p * cfn * fnr + (1 - p) * cfp * fpr
+    return dcf_normalized(dcfu, p, cfn, cfp)
