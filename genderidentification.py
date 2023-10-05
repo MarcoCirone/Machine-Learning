@@ -38,7 +38,7 @@ def scatter2D(D, L):
                 plt.xlabel(f'Dimension {i}')
                 plt.xlabel(f'Dimension {j}')
                 plt.legend()
-                plt.show()
+
                 
 def scatter3D(D, L):
     for i in range(D.shape[0]):
@@ -57,7 +57,7 @@ def scatter3D(D, L):
                         ax.set_ylabel('Y Label')
                         ax.set_zlabel('Z Label')
                     plt.legend()
-                    plt.show()
+
                     
 def hist(D, L):
     for i in range(D.shape[0]):
