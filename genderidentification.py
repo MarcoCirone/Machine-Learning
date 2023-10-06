@@ -1,17 +1,10 @@
 #  import numpy as np
 import scipy
 from training.gaussian.gaussians_models import *
-from  training.gmm.gmms import *
+from training.gmm.gmms import *
 from utils import load, k_fold
 
 
-def pca(d, n):
-    mu = mcol(d.mean(axis=1))
-    dc = d - mu
-    cov = np.dot(dc, dc.T)
-    cov = cov / float(dc.shape[1])
-    s, u = np.linalg.eigh(cov)
-    return u[:, ::-1][:, 0:n]
 
 def lda(d, l, n):
     mu = mcol(d.mean(axis=1))
@@ -63,15 +56,11 @@ if __name__ == '__main__':
     dtr, ltr = load("Train.txt")
     dte, lte = load("Test.txt")
     
-    prior = 0.1
+    prior = 0.5
     cfn = 1
     cfp = 1
-    #
-    # P1 = pca(dtr, 10)
-    # nDTR = np.dot(P1.T, dtr)
 
-
-    min_dcf = k_fold(dtr, ltr, 5, gmm_loglikelihood_domain, prior, cfn, cfp, g_num=4)
+    min_dcf = k_fold(dtr, ltr, 5, mvg_loglikelihood_TiedCovariance, prior, cfn, cfp, seed=27, pca_m=10)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/MVG_Results.txt", MVG_log_likelihood_domain)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/TVG_Results.txt", TVG_log_likelihood_domain)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/Naive_Bayes_Results.txt", Naive_Bayes_log_likelihood_domain)

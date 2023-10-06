@@ -1,6 +1,14 @@
 import numpy as np
 import math
 
+def pca(d, n):
+    mu = mcol(d.mean(axis=1))
+    dc = d - mu
+    cov = np.dot(dc, dc.T)
+    cov = cov / float(dc.shape[1])
+    s, u = np.linalg.eigh(cov)
+    return u[:, ::-1][:, 0:n]
+
 def load(file):
     d = []
     l = []
@@ -39,7 +47,7 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p, cfn, cfp, seed=27, g_num=None):
+def k_fold(d, l, k, model, p, cfn, cfp, seed=17, g_num=None, pca_m=None):
 
     n_test = math.ceil(d.shape[1]/k)
 
@@ -69,6 +77,13 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=27, g_num=None):
             if i not in i_test:
                 i_train.append(i)
         dtr = rd[:, i_train]
+
+        if pca_m is not None:
+            # PCA
+            p1 = pca(dtr, pca_m)
+            dtr = np.dot(p1.T, dtr)
+            dte = np.dot(p1.T, dte)
+
         ltr = rl[i_train]
         if g_num is None:
             score.append(model(dtr, ltr, dte))
@@ -86,12 +101,12 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=27, g_num=None):
     for i in range(d.shape[1]):
         preshuffle_score[idx[i]] = score[i]
 
-    ordered_score = np.sort(score)
-    all_dcf = np.zeros(score.shape)
+    thresholds = np.concatenate([np.array([-np.inf]), np.sort(score), np.array([np.inf])])
+    all_dcf = np.zeros(thresholds.shape)
 
-    for i in range(ordered_score.shape[0]):
-        th = ordered_score[i]
-        pl = predict_labels(preshuffle_score, th)
+    for i in range(thresholds.shape[0]):
+
+        pl = predict_labels(preshuffle_score, thresholds[i])
         conf_matrix = get_confusion_matrix(pl, l, l.max() + 1)
 
         all_dcf[i] = compute_dcf(conf_matrix, cfn, cfp, p)
@@ -101,7 +116,7 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=27, g_num=None):
 def predict_labels(scores, th):
     labels = np.zeros(scores.shape[0])
     for i in range(scores.shape[0]):
-        if scores[i] > th:
+        if scores[i] >= th:
             labels[i] += 1
     return np.array(labels, dtype=np.int32)
 
