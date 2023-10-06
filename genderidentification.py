@@ -1,56 +1,8 @@
 #  import numpy as np
 import scipy
-from training.gaussian.gaussians_models import *
-from training.gmm.gmms import *
-from utils import load, k_fold
-
-
-
-def lda(d, l, n):
-    mu = mcol(d.mean(axis=1))
-    sb = np.zeros((d.shape[0], d.shape[0]))
-    sw = np.zeros((d.shape[0], d.shape[0]))
-    for c in range(l.max()+1):
-        d_c = d[:, l == c]
-        mu_c = mcol(d_c.mean(axis=1))
-        sb += d_c.shape[1] * np.dot((mu_c - mu), (mu_c - mu).T)
-        sw += np.dot((d_c - mu_c), (d_c - mu_c).T)
-    sb /= d.shape[1]
-    sw /= d.shape[1]
-    _, u = scipy.linalg.eigh(sb, sw)
-    w = u[:, ::-1][:, 0:n]
-    return w
-
-#  def compute_results(DTR, LTR, DTE, LTE, Prior, file_name, model):
-#      file = open(file_name, "w")
-#
-#      content = ""
-#
-#      for i in range(DTR.shape[0], 0, -1):
-#          if i != DTR.shape[0]:
-#              P1 = PCA(DTR, i)
-#              nDTR = np.dot(P1.T, DTR)
-#              nDTE = np.dot(P1.T, DTE)
-#          else:
-#              nDTR = DTR
-#              nDTE = DTE
-#          for j in range(i, 0, -1):
-#              print(f"i={i} j={j}\n")
-#              if j != i:
-#                  P2 = LDA(nDTR, LTR, j)
-#                  nDTR = np.dot(P2.T, nDTR)
-#                  nDTE = np.dot(P2.T, nDTE)
-#              logS = model(nDTR, LTR, nDTE)
-#              PL = compute_predicted_labels_log(logS, Prior)
-#
-#              CL = PL == LTE
-#              acc = CL.sum(0)/CL.shape[0]
-#              err_rate = (1-acc)*100
-#              content += f"Dim_after_PCA:{i},Dim_after_LDA:{j},Error_Rate:{err_rate}%\n"
-#
-#      file.write(content)
-#      file.close()
-
+from models.gaussian.gaussians_training_models import *
+from models.gmm.gmm_training_models import *
+from general.utils import load, k_fold
 
 if __name__ == '__main__':
     dtr, ltr = load("Train.txt")
@@ -60,7 +12,7 @@ if __name__ == '__main__':
     cfn = 1
     cfp = 1
 
-    min_dcf = k_fold(dtr, ltr, 5, gmm_loglikelihood_naiveBayes, prior, cfn, cfp, seed=27, g_num=4, pca_m=12)
+    min_dcf = k_fold(dtr, ltr, 5, gmm_loglikelihood_diag, prior, cfn, cfp, seed=27, g_num=4)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/MVG_Results.txt", MVG_log_likelihood_domain)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/TVG_Results.txt", TVG_log_likelihood_domain)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/Naive_Bayes_Results.txt", Naive_Bayes_log_likelihood_domain)
