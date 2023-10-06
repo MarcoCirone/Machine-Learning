@@ -1,4 +1,3 @@
-import numpy
 import numpy as np
 import math
 
@@ -40,7 +39,7 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p, cfn, cfp, seed=27):
+def k_fold(d, l, k, model, p, cfn, cfp, seed=27, g_num=None):
 
     n_test = math.ceil(d.shape[1]/k)
 
@@ -71,8 +70,10 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=27):
                 i_train.append(i)
         dtr = rd[:, i_train]
         ltr = rl[i_train]
-
-        score.append(model(dtr, ltr, dte))
+        if g_num is None:
+            score.append(model(dtr, ltr, dte))
+        else:
+            score.append(model(dtr, ltr, dte, g_num))
 
         start += n_test
         stop += n_test
@@ -81,8 +82,7 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=27):
             stop = d.shape[1]
 
     score = np.hstack(score)
-
-    preshuffle_score = numpy.zeros(score.shape)
+    preshuffle_score = np.zeros(score.shape)
     for i in range(d.shape[1]):
         preshuffle_score[idx[i]] = score[i]
 
