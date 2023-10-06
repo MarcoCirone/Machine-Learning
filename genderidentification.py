@@ -60,7 +60,7 @@ if __name__ == '__main__':
     cfn = 1
     cfp = 1
 
-    min_dcf = k_fold(dtr, ltr, 5, mvg_loglikelihood_TiedCovariance, prior, cfn, cfp, seed=27, pca_m=10)
+    min_dcf = k_fold(dtr, ltr, 5, gmm_loglikelihood_naiveBayes, prior, cfn, cfp, seed=27, g_num=4, pca_m=12)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/MVG_Results.txt", MVG_log_likelihood_domain)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/TVG_Results.txt", TVG_log_likelihood_domain)
     # compute_results(DTR, LTR, DTE, LTE, Prior, "./accuracies/Naive_Bayes_Results.txt", Naive_Bayes_log_likelihood_domain)

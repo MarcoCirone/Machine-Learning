@@ -116,7 +116,7 @@ def LBG_algorithm(alpha, g_num, x, stop, psi, diag, tied):
         gmm = gmm_vec[-1]
     return gmm
 
-def score_mat(dtr, ltr, dte, g_num, diag=False, tied=True):
+def score_mat(dtr, ltr, dte, g_num, diag=False, tied=False):
     score = np.zeros(dte.shape[1])
     gmm = gmm_model(dtr, ltr, g_num, diag, tied)
     for j in range(dte.shape[1]):
@@ -139,7 +139,7 @@ def gmm_loglikelihood_domain(dtr, ltr, dte, g_num):
     return score_mat(dtr, ltr, dte, g_num)
 
 def gmm_loglikelihood_naiveBayes(dtr, ltr, dte, g_num):
-    return score_mat(dtr, ltr, dte, g_num, diag= True)
+    return score_mat(dtr, ltr, dte, g_num, diag=True)
 
 def gmm_loglikelihood_TiedCovariance(dtr, ltr, dte, g_num):
     return score_mat(dtr, ltr, dte, g_num, tied=True)
