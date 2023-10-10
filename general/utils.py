@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import scipy
 
 def pca(d, n):
     mu = mcol(d.mean(axis=1))
@@ -63,7 +64,7 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p, cfn, cfp, seed=17, g_num=None, pca_m=None):
+def k_fold(d, l, k, model, p, cfn, cfp, seed=17, g_num=None, pca_m=None, svm_params=None):     #svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
 
     n_test = math.ceil(d.shape[1]/k)
 
@@ -81,7 +82,7 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=17, g_num=None, pca_m=None):
     score = []
 
     for ki in range(k):
-        # print(f"Iterazione {k}")
+        print(f"Iterazione {ki}")
 
         # DEFINIZIONE TEST SET
         i_test = range(start, stop, 1)
@@ -101,8 +102,12 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=17, g_num=None, pca_m=None):
             dte = np.dot(p1.T, dte)
 
         ltr = rl[i_train]
+
         if g_num is None:
-            score.append(model(dtr, ltr, dte))
+            if svm_params is None:
+                score.append(model(dtr, ltr, dte))
+            else:
+                score.append(model(dtr, ltr, dte,  svm_params))
         else:
             score.append(model(dtr, ltr, dte, g_num))
 
