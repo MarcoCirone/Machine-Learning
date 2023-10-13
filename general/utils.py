@@ -10,6 +10,13 @@ def pca(d, n):
     s, u = np.linalg.eigh(cov)
     return u[:, ::-1][:, 0:n]
 
+def z_score(dtr, dte=None):
+    mu = mcol(dtr.mean(1))
+    std = mcol(dtr.std(1))
+    dtr = (dtr - mu) / std
+    if dte is not None:
+        dte = (dte - mu) / std
+    return dtr, dte
 
 def lda(d, l, n):
     mu = mcol(d.mean(axis=1))
@@ -64,7 +71,7 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p, cfn, cfp, seed=17, g_num=None, pca_m=None, svm_params=None):     #svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
+def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_params=None, pt=None, reg_term=None, zscore=False):     #svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
 
     n_test = math.ceil(d.shape[1]/k)
 
@@ -82,7 +89,7 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=17, g_num=None, pca_m=None, svm_par
     score = []
 
     for ki in range(k):
-        print(f"Iterazione {ki}")
+        print(f"k_fold: Iterazione {ki + 1}")
 
         # DEFINIZIONE TEST SET
         i_test = range(start, stop, 1)
@@ -95,19 +102,26 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=17, g_num=None, pca_m=None, svm_par
                 i_train.append(i)
         dtr = rd[:, i_train]
 
+        if zscore:
+            dtr, dte = z_score(dtr, dte)
+
         if pca_m is not None:
             # PCA
             p1 = pca(dtr, pca_m)
             dtr = np.dot(p1.T, dtr)
             dte = np.dot(p1.T, dte)
 
+
         ltr = rl[i_train]
 
         if g_num is None:
             if svm_params is None:
-                score.append(model(dtr, ltr, dte))
+                if reg_term is None:
+                    score.append(model(dtr, ltr, dte))
+                else:
+                    score.append(model(dtr, ltr, reg_term, pt))
             else:
-                score.append(model(dtr, ltr, dte,  svm_params))
+                score.append(model(dtr, ltr, dte,  svm_params, pt))
         else:
             score.append(model(dtr, ltr, dte, g_num))
 

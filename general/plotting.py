@@ -1,5 +1,8 @@
 import matplotlib.pyplot as plt
-
+import numpy as np
+import sys
+sys.path.append("./")
+from general.utils import k_fold
 
 def hist(d, l):
     for i in range(d.shape[0]):
@@ -44,3 +47,35 @@ def scatter_3d(d, l):
                         ax.set_ylabel('Y Label')
                         ax.set_zlabel('Z Label')
                     plt.legend()
+def plot_min_dcfs(dtr, ltr, cfn, cfp, model, pt=None, svm_params=None, reg_term=None, pca_m=None, seed=0):
+    values = np.logspace(-5, 5, num=31)
+    label = "C"
+    min_dcf_list = []
+    e = [0.5, 0.1, 0.9]
+    k = 0
+
+    if svm_params is None:
+        values = np.logspace(-5, 5, num=51)
+        label = "$lambda$"
+
+    for eff_p in e:
+        mins = []
+        for v in values:
+
+            if svm_params is None:
+                reg_term = v
+            else:
+                svm_params[1] = v
+
+            dcf_min = k_fold(dtr, ltr, 5, model, eff_p, cfn, cfp, seed=seed, pt=pt, reg_term=reg_term, svm_params=svm_params, pca_m=pca_m)
+            mins.append(dcf_min)
+            k += 1
+            print(f"Iterazione {k}: prior= {eff_p} {label}= {v} => min_dcf= {dcf_min}")
+        min_dcf_list.append(mins.copy())
+    for i in range(len(min_dcf_list)):
+        plt.plot(values, min_dcf_list[i], label=f"eff_p={e[i]}")
+    plt.xscale("log")
+    plt.xlabel(label)
+    plt.ylabel("minDCF")
+    plt.xlim([c_values[0], c_values[-1]])
+    plt.legend()

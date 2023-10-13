@@ -104,23 +104,23 @@ def expand_matrix(mat):
         new_mat[:, i:i + 1] = column
     return new_mat
 
-def plot_min_dcfs(dtr, ltr, cfn, cfp, pt):
-    lam_values = np.logspace(-5, 5, num=51)
-    min_dcf_list = []
-    e = [0.5, 0.1, 0.9]
-    k = 0
-    for eff_p in e:
-        mins = []
-        for lam in np.logspace(-5, 5, num=51):
-            mins.append(k_fold(dtr, ltr, 5, linear_log_reg, eff_p, cfn, cfp, seed=27, pt=pt, reg_term=lam))
-            k += 1
-            print(f"Iterazione {k}")
-        min_dcf_list.append(mins.copy())
-    for i in range(len(min_dcf_list)):
-        plt.plot(lam_values, min_dcf_list[i], label=f"eff_p={e[i]}")
-    plt.xscale("log")
-    plt.xlabel("$lambda$")
-    plt.ylabel("minDCF")
-    plt.xlim([lam_values[0], lam_values[-1]])
-    plt.legend()
-    plt.show()
+# def plot_min_dcfs(dtr, ltr, cfn, cfp, pt):
+#     lam_values = np.logspace(-5, 5, num=51)
+#     min_dcf_list = []
+#     e = [0.5, 0.1, 0.9]
+#     k = 0
+#     for eff_p in e:
+#         mins = []
+#         for lam in np.logspace(-5, 5, num=51):
+#             mins.append(k_fold(dtr, ltr, 5, linear_log_reg, eff_p, cfn, cfp, seed=27, pt=pt, reg_term=lam))
+#             k += 1
+#             print(f"Iterazione {k}")
+#         min_dcf_list.append(mins.copy())
+#     for i in range(len(min_dcf_list)):
+#         plt.plot(lam_values, min_dcf_list[i], label=f"eff_p={e[i]}")
+#     plt.xscale("log")
+#     plt.xlabel("$lambda$")
+#     plt.ylabel("minDCF")
+#     plt.xlim([lam_values[0], lam_values[-1]])
+#     plt.legend()
+#     plt.show()

@@ -2,7 +2,7 @@ import numpy as np
 import scipy.optimize as sp
 import sys
 sys.path.append("../../")
-from general.utils import mcol, mrow
+from general.utils import mcol, mrow, k_fold
 from itertools import repeat
 
 # linear SVM
@@ -64,11 +64,32 @@ def dual_obj_wrap(h):
 
 
 # params = [ K*, C, p*, rbf]
-def svm_linear(dtr, ltr, dte, params):
-    return score_mat(dtr, ltr, dte,  k=params[0], c=params[1], p=params[2])
+def svm_linear(dtr, ltr, dte, params, pt):
+    return score_mat(dtr, ltr, dte,  k=params[0], c=params[1], p=pt)
 
-def svm_kernel_pol(dtr, ltr, dte, params):
-    return score_mat_kernel(dtr, ltr, dte, k=params[0], c=params[1], p=params[2])
+def svm_kernel_pol(dtr, ltr, dte, params, pt):
+    return score_mat_kernel(dtr, ltr, dte, k=params[0], c=params[1], p=pt)
 
-def svm_kernel_rbf(dtr, ltr, dte, params):
-    return score_mat_kernel(dtr, ltr, dte, k=params[0], c=params[1], p=params[2], rbf=params[3])
+def svm_kernel_rbf(dtr, ltr, dte, params, pt):
+    return score_mat_kernel(dtr, ltr, dte, k=params[0], c=params[1], p=pt, rbf=params[2])
+
+
+# def plot_min_dcfs_svm(dtr, ltr, cfn, cfp):
+#     c_values = np.logspace(-5, 5, num=51)
+#     min_dcf_list = []
+#     e = [0.5, 0.1, 0.9]
+#     k = 0
+#     for eff_p in e:
+#         mins = []
+#         for c in c_values:
+#             mins.append(k_fold(dtr, ltr, 5, svm_linear, eff_p, cfn, cfp, seed=27, svm_params=[1, c, 0.5]))
+#             k += 1
+#             print(f"Iterazione {k}")
+#         min_dcf_list.append(mins.copy())
+#     for i in range(len(min_dcf_list)):
+#         plt.plot(values, min_dcf_list[i], label=f"eff_p={e[i]}")
+#     plt.xscale("log")
+#     plt.xlabel("$c$")
+#     plt.ylabel("minDCF")
+#     plt.xlim([c_values[0], c_values[-1]])
+#     plt.legend()
