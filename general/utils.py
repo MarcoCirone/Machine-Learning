@@ -79,6 +79,7 @@ def logpdf_GAU_ND(d, mu, cov):
 
 
 def k_fold(d, l, k, model, p, cfn, cfp, seed=0, pca_m=None, zscore=False):     # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
+    #ti prego pusha
 
     n_test = math.ceil(d.shape[1]/k)
 
