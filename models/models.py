@@ -1,8 +1,9 @@
 from abc import abstractmethod
+
+
 class Model:
 
-    def __init__(self, prior, dtr, ltr, dte, lte):
-        self.prior = prior
+    def __init__(self, dtr, ltr, dte, lte):
         self.dtr = dtr
         self.dte = dte
         self.ltr = ltr
@@ -20,4 +21,3 @@ class Model:
     @abstractmethod
     def get_scores(self):
         pass
-
