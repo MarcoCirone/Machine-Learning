@@ -71,7 +71,7 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_params=None, pt=None, reg_term=None, zscore=False):     #svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
+def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_params=None, pt=None, reg_term=None, zscore=False):     # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
 
     n_test = math.ceil(d.shape[1]/k)
 
@@ -110,7 +110,6 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_para
             p1 = pca(dtr, pca_m)
             dtr = np.dot(p1.T, dtr)
             dte = np.dot(p1.T, dte)
-
 
         ltr = rl[i_train]
 

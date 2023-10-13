@@ -16,5 +16,4 @@ if __name__ == '__main__':
     min_dcf = k_fold(dtr, ltr, 5, mvg_loglikelihood_TiedNaiveByes, prior, cfn, cfp, seed=27, zscore=True, pca_m=12)
     # plot_min_dcfs(dtr, ltr, cfn, cfp, svm_linear, pt=0.5, seed=27, svm_params=[1, 2])
 
-
     # min_dcf = k_fold(dtr, ltr, 5, mvg_loglikelihood_domain, prior, cfn, cfp, seed=27)
