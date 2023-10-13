@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import scipy
+from models.models import *
+
 
 def pca(d, n):
     mu = mcol(d.mean(axis=1))
@@ -10,6 +12,7 @@ def pca(d, n):
     s, u = np.linalg.eigh(cov)
     return u[:, ::-1][:, 0:n]
 
+
 def z_score(dtr, dte=None):
     mu = mcol(dtr.mean(1))
     std = mcol(dtr.std(1))
@@ -17,6 +20,7 @@ def z_score(dtr, dte=None):
     if dte is not None:
         dte = (dte - mu) / std
     return dtr, dte
+
 
 def lda(d, l, n):
     mu = mcol(d.mean(axis=1))
@@ -33,6 +37,7 @@ def lda(d, l, n):
     w = u[:, ::-1][:, 0:n]
     return w
 
+
 def load(file):
     d = []
     l = []
@@ -45,8 +50,10 @@ def load(file):
             l.append(label)
     return np.hstack(d), np.array(l, dtype=np.int32)
 
+
 def mcol(v):
     return v.reshape((v.size, 1))
+
 
 def mrow(v):
     return v.reshape([1, v.size])
@@ -94,6 +101,7 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_para
         # DEFINIZIONE TEST SET
         i_test = range(start, stop, 1)
         dte = rd[:, i_test]
+        lte = rl[i_test]
 
         # DEFINIZIONE TRAINING SET
         i_train = []
@@ -118,7 +126,9 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_para
                 if reg_term is None:
                     score.append(model(dtr, ltr, dte))
                 else:
-                    score.append(model(dtr, ltr, reg_term, pt))
+                    m = model(dtr, ltr, dte, lte, reg_term, pt)
+                    m.train()
+                    score.append(m.get_scores())
             else:
                 score.append(model(dtr, ltr, dte,  svm_params, pt))
         else:
@@ -146,6 +156,7 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_para
         all_dcf[i] = compute_dcf(conf_matrix, cfn, cfp, p)
 
     return all_dcf.min()
+
 
 def predict_labels(scores, th):
     labels = np.zeros(scores.shape[0])
