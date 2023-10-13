@@ -68,6 +68,7 @@ class LinearSvm(SvmModel):
     def get_scores(self):
         dte_ext = np.vstack([self.dte, np.ones(self.dte.shape[1]) * self.k])
         self.scores = np.dot(self.w.T, dte_ext)
+        return self.scores
 
 class KernelSvm(SvmModel):
     def __init__(self, c, k, pt):
@@ -82,6 +83,7 @@ class KernelSvm(SvmModel):
 
     def get_scores(self):
         self.scores = np.sum(np.dot(self.alpha_z, compute_kernel(self.dtr, self.dte)), axis=0)
+        return self.scores
 
     @abstractmethod
     def compute_kernel(self, d1, d2):

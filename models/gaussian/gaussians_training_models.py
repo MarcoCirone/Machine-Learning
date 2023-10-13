@@ -2,57 +2,88 @@ import numpy as np
 import sys
 sys.path.append("../../")
 from general.utils import mcol, logpdf_GAU_ND
+from models.models import *
+
+class GaussianModel(Model):
+    def __init__(self):
+        super().__init__()
+        self.mu = []
+        self.cov = []
+
+    def mu_and_covariance(self):
+        for i in range(2):
+            di = self.dtr[:, self.ltr == i]  # samples for class i
+            self.mu.append(di.mean(1))  # mean for class i
+            center_data = di - mcol(di.mean(1))  # center dataset
+            self.cov.append(np.dot(1 / (di.shape[1]) * center_data, center_data.T))  # compute covariance matrix
+
+    def score_as_vec(self):
+        self.scores = np.vstack(self.scores)
+        com = np.zeros(self.score.shape[1])
+        for i in range(self.score.shape[1]):
+            com[i] = self.score[1][i] - self.score[0][i]
+        return com
+
+    def train(self):
+        self.mu_and_covariance()
+
+    @abstractmethod
+    def get_scores(self):
+        pass
+
+class MVG(GaussianModel):
+    def __init__(self, mu=None, cov=None):
+        super().__init__()
+        self.mu = mu if mu is not None else []
+        self.cov = cov if cov is not None else []
+
+    def get_scores(self):
+        for i in range(2):
+            self.scores.append(logpdf_GAU_ND(self.dte, mcol(self.mu[i]), self.cov[i]))
+        self.scores = self.score_as_vec()
+        return self.scores
+
+class NaiveBayes(GaussianModel):
+    def __init__(self, mu=None, cov=None):
+        super().__init__()
+        self.mu = mu if mu is not None else []
+        self.cov = cov if cov is not None else []
+
+    def get_scores(self):
+        for i in range(2):
+            self.scores.append(logpdf_GAU_ND(self.dte, mcol(self.mu[i]), self.cov[i] * np.eye(self.cov[i].shape[0])))
+        self.scores = self.score_as_vec()
+        return self.scores
+
+class MVGTied(GaussianModel):
+    def __init__(self, mu=None, cov=None):
+        super().__init__()
+        self.mu = mu if mu is not None else []
+        self.cov = cov if cov is not None else []
+
+    def compute_tied_cov(self):
+        self.cov = np.zeros([self.dtr.shape[0], self.dtr.shape[0]])
+        for i in range(2):
+            di = self.dtr[:, self.ltr == i]  # samples for class i
+            self.cov += np.dot((di - mcol(self.mu[i])), (di - mcol(self.mu[i])).T)
+        self.cov /= self.dtr.shape[1]
+
+    def get_scores(self):
+        self.compute_tied_cov()
+        mvg = MVG(mu=self.mu, cov=self.cov)
+        self.scores = mvg.get_scores()
+        return self.scores
+
+class NBTied(GaussianModel):
+    def __init__(self):
+        super().__init__()
+
+    def get_scores(self):
+        mt = MVGTied(mu=self.mu, cov=self.cov)
+        mt.compute_tied_cov()
+        nb = NaiveBayes(mu=mt.mu, cov=mt.cov)
+        self.scores = nb.get_scores()
+        return self.scores
 
 
-def mu_and_covariance(d, l, n):
-    mu = []
-    cov = []
-    dc = []
-    for i in range(n):
-        di = d[:, l == i]       # samples for class i
-        dc.append(di)
-        mu.append(di.mean(1))       # mean for class i
-        center_data = di - mcol(di.mean(1))     # center dataset
-        cov.append(np.dot(1/(di.shape[1])*center_data, center_data.T))       # compute covariance matrix
-    return mu, cov, dc
 
-
-def score_mat(dtr, ltr, dte, tied=False, diag=False):
-    n_class = np.max(ltr)+1
-    mu, cov, dc = mu_and_covariance(dtr, ltr, n_class)
-    score = []
-    if tied:
-        tied_cov = np.zeros([dtr.shape[0], dtr.shape[0]])
-        for i in range(n_class):
-            tied_cov += np.dot((dc[i]-mcol(mu[i])), (dc[i]-mcol(mu[i])).T)
-        tied_cov /= dtr.shape[1]
-        for i in range(n_class):
-            if diag:
-                score.append(logpdf_GAU_ND(dte, mcol(mu[i]), tied_cov * np.eye(tied_cov.shape[0])))
-            else:
-                score.append(logpdf_GAU_ND(dte, mcol(mu[i]), tied_cov))
-    else:
-        for i in range(n_class):
-            if diag:
-                score.append(logpdf_GAU_ND(dte, mcol(mu[i]), cov[i] * np.eye(cov[i].shape[0])))
-            else:
-                score.append(logpdf_GAU_ND(dte, mcol(mu[i]), cov[i]))
-
-    return score_as_vec(np.vstack(score))
-
-
-def score_as_vec(score_matrix):
-    com = np.zeros(score_matrix.shape[1])
-    for i in range(score_matrix.shape[1]):
-        com[i] = score_matrix[1][i] - score_matrix[0][i]
-    return com
-
-
-def mvg_loglikelihood_domain(dtr, ltr, dte):
-    return score_mat(dtr, ltr, dte)
-def mvg_loglikelihood_naiveBayes(dtr, ltr, dte):
-    return score_mat(dtr, ltr, dte, diag=True)
-def mvg_loglikelihood_TiedCovariance(dtr, ltr, dte):
-    return score_mat(dtr, ltr, dte,  tied=True)
-def mvg_loglikelihood_TiedNaiveByes(dtr, ltr, dte):
-    return score_mat(dtr, ltr, dte,  tied=True, diag=True)
