@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import scipy
-from models.models import *
+from models.models import Model
 
 
 def pca(d, n):
@@ -78,7 +78,7 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_params=None, pt=None, reg_term=None, zscore=False):     # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
+def k_fold(d, l, k, model, p, cfn, cfp, seed=0, pca_m=None, zscore=False):     # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
 
     n_test = math.ceil(d.shape[1]/k)
 
@@ -121,18 +121,23 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_para
 
         ltr = rl[i_train]
 
-        if g_num is None:
-            if svm_params is None:
-                if reg_term is None:
-                    score.append(model(dtr, ltr, dte))
-                else:
-                    m = model(dtr, ltr, dte, lte, reg_term, pt)
-                    m.train()
-                    score.append(m.get_scores())
-            else:
-                score.append(model(dtr, ltr, dte,  svm_params, pt))
-        else:
-            score.append(model(dtr, ltr, dte, g_num))
+        # if g_num is None:
+        #     if svm_params is None:
+        #         if reg_term is None:
+        #             score.append(model(dtr, ltr, dte))
+        #         else:
+        #             m = model(reg_term, pt)
+        #             m.set_data(dtr, ltr, dte, lte)
+        #             m.train()
+        #             score.append(m.get_scores())
+        #     else:
+        #         score.append(model(dtr, ltr, dte,  svm_params, pt))
+        # else:
+        #     score.append(model(dtr, ltr, dte, g_num))
+
+        model.set_data(dtr, ltr, dte, lte)
+        model.train()
+        score.append(model.get_scores())
 
         start += n_test
         stop += n_test
