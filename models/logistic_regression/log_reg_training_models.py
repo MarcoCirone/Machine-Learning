@@ -7,12 +7,15 @@ import matplotlib.pyplot as plt
 
 
 class LR(Model):
-    def __init__(self, dtr, ltr, dte, lte, reg_term, pt):
-        super().__init__(dtr, ltr, dte, lte)
+    def __init__(self, reg_term, pt):
+        super().__init__()
         self.reg_term = reg_term
         self.pt = pt
         self.w = None
         self.b = None
+
+    def set_data(self, dtr, ltr, dte, lte):
+        super().set_data(dtr, ltr, dte, lte)
 
     def train(self):
         logreg = logreg_obj_wrap(self.dtr, self.ltr, self.reg_term, self.pt)
@@ -25,15 +28,21 @@ class LR(Model):
         self.scores = np.dot(self.w.T, self.dte) + self.b
         return self.scores
 
+    def description(self):
+        return f"LR_l_{self.reg_term}_pt_{self.pt}_"
+
 
 class QLR(LR):
 
-    def __init__(self, dtr, ltr, dte, lte, reg_term, pt):
-        super().__init__(dtr, ltr, dte, lte, reg_term, pt)
+    def __init__(self, reg_term, pt):
+        super().__init__(reg_term, pt)
 
     def train(self):
         self.dtr, self.dte = feature_expansion(self.dtr, self.dte)
         super().train()
+
+    def description(self):
+        return f"QLR_l_{self.reg_term}_pt_{self.pt}_"
 
 
 def logreg_obj_wrap(dtr, ltr, reg_term, pt):
@@ -54,21 +63,6 @@ def logreg_obj_wrap(dtr, ltr, reg_term, pt):
         return reg_term / 2 * (w * w).sum() + s
 
     return logreg_obj
-
-
-def linear_log_reg(dtr, ltr, dte, p, reg_term):
-    logreg = logreg_obj_wrap(dtr, ltr, reg_term, p)
-    x, f, d = scipy.optimize.fmin_l_bfgs_b(logreg, x0=numpy.zeros(dtr.shape[0] + 1), approx_grad=True, factr=1.0)
-    w = x[0:-1]
-    b = x[-1]
-
-    scores = np.dot(w.T, dte) + b
-    return scores
-
-
-def quad_log_reg(dtr, ltr, dte, p, reg_term):
-    n_dtr, n_dte = feature_expansion(dtr, dte)
-    return linear_log_reg(n_dtr, ltr, n_dte, p, reg_term)
 
 
 def feature_expansion(dtr, dte):
@@ -93,3 +87,31 @@ def expand_matrix(mat):
         column[dim ** 2:dim ** 2 + dim, :] = x
         new_mat[:, i:i + 1] = column
     return new_mat
+
+
+def cross_val_log_reg(d, l, prior, cfn, cfp):
+    values = np.logspace(-5, 5, num=31)
+    label = "$lambda$"
+    min_dcf_list = []
+    e = [0.1, 0.5, 0.9]
+    k = 0
+
+    for eff_p in e:
+        mins = []
+        for v in values:
+            reg_term = v
+            model = LR(reg_term, prior)
+            dcf_min = k_fold(d, l, 5, model, eff_p, cfn, cfp, seed=27)
+            mins.append(dcf_min)
+            k += 1
+            print(f"Iterazione {k}: prior= {eff_p} {label}= {v} => min_dcf= {dcf_min}")
+        min_dcf_list.append(mins.copy())
+
+    for i in range(len(min_dcf_list)):
+        plt.plot(values, min_dcf_list[i], label=f"eff_p={e[i]}")
+    plt.xscale("log")
+    plt.xlabel(label)
+    plt.ylabel("minDCF")
+    plt.xlim([values[0], values[-1]])
+    plt.legend()
+    plt.show()

@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import scipy
+import os
 from models.models import Model
 
 
@@ -122,20 +123,6 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, pca_m=None, zscore=False):     #
 
         ltr = rl[i_train]
 
-        # if g_num is None:
-        #     if svm_params is None:
-        #         if reg_term is None:
-        #             score.append(model(dtr, ltr, dte))
-        #         else:
-        #             m = model(reg_term, pt)
-        #             m.set_data(dtr, ltr, dte, lte)
-        #             m.train()
-        #             score.append(m.get_scores())
-        #     else:
-        #         score.append(model(dtr, ltr, dte,  svm_params, pt))
-        # else:
-        #     score.append(model(dtr, ltr, dte, g_num))
-
         model.set_data(dtr, ltr, dte, lte)
         model.train()
         score.append(model.get_scores())
@@ -150,6 +137,11 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, pca_m=None, zscore=False):     #
     preshuffle_score = np.zeros(score.shape)
     for i in range(d.shape[1]):
         preshuffle_score[idx[i]] = score[i]
+
+    if not os.path.exists("score_models"):
+        os.makedirs("score_models")
+
+    np.save(f"score_models/{model.description()}prior_{p}", preshuffle_score)
 
     thresholds = np.concatenate([np.array([-np.inf]), np.sort(score), np.array([np.inf])])
     all_dcf = np.zeros(thresholds.shape)
