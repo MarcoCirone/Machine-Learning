@@ -4,6 +4,7 @@ import numpy
 from models.models import Model
 from general.utils import k_fold
 import matplotlib.pyplot as plt
+from general.utils import *
 
 
 class LR(Model):
@@ -31,6 +32,9 @@ class LR(Model):
     def description(self):
         return f"LR_l_{self.reg_term}_pt_{self.pt}_"
 
+    def folder(self):
+        return "LR"
+
 
 class QLR(LR):
 
@@ -43,6 +47,9 @@ class QLR(LR):
 
     def description(self):
         return f"QLR_l_{self.reg_term}_pt_{self.pt}_"
+
+    def folder(self):
+        return "QLR"
 
 
 def logreg_obj_wrap(dtr, ltr, reg_term, pt):
@@ -92,26 +99,27 @@ def expand_matrix(mat):
 def cross_val_log_reg(d, l, prior, cfn, cfp):
     values = np.logspace(-5, 5, num=31)
     label = "$lambda$"
-    min_dcf_list = []
     e = [0.1, 0.5, 0.9]
     k = 0
-
-    for eff_p in e:
-        mins = []
+    z_s = [False, True]
+    for z in z_s:
+        mins = [[], [], []]
         for v in values:
             reg_term = v
             model = LR(reg_term, prior)
-            dcf_min = k_fold(d, l, 5, model, eff_p, cfn, cfp, seed=27)
-            mins.append(dcf_min)
-            k += 1
-            print(f"Iterazione {k}: prior= {eff_p} {label}= {v} => min_dcf= {dcf_min}")
-        min_dcf_list.append(mins.copy())
+            scores = k_fold(d, l, 5, model, seed=27, zscore=z)
+            for j in range(len(e)):
+                dcf_min = compute_min_dcf(scores, l, e[j], cfn, cfp)
+                mins[j].append(dcf_min)
+            # k += 1
+            # print(f"Iterazione {k}: prior= {eff_p} {label}= {v} => min_dcf= {dcf_min}")
+        # min_dcf_list.append(mins.copy())
 
-    for i in range(len(min_dcf_list)):
-        plt.plot(values, min_dcf_list[i], label=f"eff_p={e[i]}")
-    plt.xscale("log")
-    plt.xlabel(label)
-    plt.ylabel("minDCF")
-    plt.xlim([values[0], values[-1]])
-    plt.legend()
-    plt.show()
+        for i in range(len(mins)):
+            plt.plot(values, mins[i], label=f"eff_p={e[i]}")
+        plt.xscale("log")
+        plt.xlabel(label)
+        plt.ylabel("minDCF")
+        plt.xlim([values[0], values[-1]])
+        plt.legend()
+        plt.show()

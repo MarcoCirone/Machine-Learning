@@ -27,3 +27,7 @@ class Model:
     @abstractmethod
     def description(self):
         pass
+
+    @abstractmethod
+    def folder(self):
+        pass
