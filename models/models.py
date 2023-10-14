@@ -23,3 +23,7 @@ class Model:
     @abstractmethod
     def get_scores(self):
         pass
+
+    @abstractmethod
+    def description(self):
+        pass
