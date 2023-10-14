@@ -83,6 +83,8 @@ def logpdf_GAU_ND(d, mu, cov):
 
 def k_fold(d, l, k, model, p, cfn, cfp, seed=0, pca_m=None, zscore=False):     # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
     #ti prego pusha
+    pca_desc = ""
+    z_score_desc = ""
 
     n_test = math.ceil(d.shape[1]/k)
 
@@ -100,7 +102,7 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, pca_m=None, zscore=False):     #
     score = []
 
     for ki in range(k):
-        print(f"k_fold: Iterazione {ki + 1}")
+        # print(f"k_fold: Iterazione {ki + 1}")
 
         # DEFINIZIONE TEST SET
         i_test = range(start, stop, 1)
@@ -116,12 +118,14 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, pca_m=None, zscore=False):     #
 
         if zscore:
             dtr, dte = z_score(dtr, dte)
+            z_score_desc = "_zscore"
 
         if pca_m is not None:
             # PCA
             p1 = pca(dtr, pca_m)
             dtr = np.dot(p1.T, dtr)
             dte = np.dot(p1.T, dte)
+            pca_desc = f"_pca_{pca_m}"
 
         ltr = rl[i_train]
 
@@ -140,10 +144,10 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, pca_m=None, zscore=False):     #
     for i in range(d.shape[1]):
         preshuffle_score[idx[i]] = score[i]
 
-    if not os.path.exists("score_models"):
-        os.makedirs("score_models")
+    if not os.path.exists("score_models/"+model.folder()):
+        os.makedirs("score_models/"+model.folder())
 
-    np.save(f"score_models/{model.description()}prior_{p}", preshuffle_score)
+    np.save(f"score_models/{model.description()}prior_{p}{pca_desc}{z_score_desc}", preshuffle_score)
 
     thresholds = np.concatenate([np.array([-np.inf]), np.sort(score), np.array([np.inf])])
     all_dcf = np.zeros(thresholds.shape)

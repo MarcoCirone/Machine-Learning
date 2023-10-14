@@ -29,6 +29,14 @@ class SvmModel(Model):
     def get_scores(self):
         pass
 
+    @abstractmethod
+    def description(self):
+        pass
+
+    @abstractmethod
+    def folder(self):
+        pass
+
     def set_values(self, c, pt):
         self.c = c
         self.pt = pt
@@ -70,6 +78,12 @@ class LinearSvm(SvmModel):
         self.scores = np.dot(self.w.T, dte_ext)
         return self.scores
 
+    def description(self):
+        return f"Linear_SVM_{self.C}_pt_{self.pt}_"
+
+    def folder(self):
+        return f"Linear_SVM"
+
 class KernelSvm(SvmModel):
     def __init__(self, c, k, pt):
         super().__init__(c, k, pt)
@@ -86,8 +100,17 @@ class KernelSvm(SvmModel):
         return self.scores
 
     @abstractmethod
+    def description(self):
+        pass
+
+    @abstractmethod
     def compute_kernel(self, d1, d2):
         pass
+
+    @abstractmethod
+    def folder(self):
+        pass
+
 class PolSvm(KernelSvm):
     def __init__(self, constant, dimension, c=None, k=1, pt=None):
         super().__init__(c, k, pt)
@@ -96,6 +119,12 @@ class PolSvm(KernelSvm):
 
     def compute_kernel(self, d1, d2):
         self.kernel = ((np.dot(d1.T, d2) + self.constant) ** self.dimension) + self.k ** 2
+
+    def description(self):
+        return f"Polinomial_SVM_{self.C}_pt_{self.pt}_c_{self.constant}_d_{self.dimension}"
+
+    def folder(self):
+        return f"Polinomial_SVM"
 
 class RbfSvm(KernelSvm):
 
@@ -109,3 +138,9 @@ class RbfSvm(KernelSvm):
             for j in range(d2.shape[1]):
                 rbf_kernel[i, j] = np.exp(-self.gamma * (np.linalg.norm(d1[:, i] - d2[:, j]) ** 2)) + self.k ** 2
         self.kernel = rbf_kernel
+
+    def description(self):
+        return f"Rbf_SVM_{self.C}_pt_{self.pt}_gamma_{self.gamma}"
+
+    def folder(self):
+        return f"Rbf_SVM"

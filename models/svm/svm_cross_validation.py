@@ -1,6 +1,7 @@
 from svm_training_models import *
 import numpy as np
 from general.utils import k_fold
+from general.plotting import plot_min_dcfs_svm
 
 def cross_validation_for_svm(d, l, model, zscore):
     cfn = 1
@@ -8,13 +9,19 @@ def cross_validation_for_svm(d, l, model, zscore):
 
     c_values = np.logspace(-5, 5, 31)
     prior = [0.5, 0.1, 0.9]
-    prior_t = [None, 0.5, 0.1, 0.9]
+
+    pt = 0.5
+    min_dcf_list = []
     for p in prior:
-        for pt in prior_t:
-            for c in c_values:
-                print(f"prior = {p}, c = {c}, pt = {pt}")
-                model.set_values(c, pt)
-                k_fold(d, l, model, p, cfn, cfp, seed=27, zscore=zscore)
+        min_dcf = []
+        for c in c_values:
+            print(f"prior = {p}, c = {c}, pt = {pt}")
+            model.set_values(c, pt)
+            m_dcf = k_fold(d, l, 5, model, p, cfn, cfp, seed=27, zscore=zscore)
+            min_dcf.append(m_dcf)
+        min_dcf_list.append(min_dcf)
+    plot_min_dcfs_svm(min_dcf_list, model.description, c_values)
+
 
 def cv_linear_svm(d, l, zscore=False):
     k = 1

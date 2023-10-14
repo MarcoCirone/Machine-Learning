@@ -3,6 +3,7 @@ from models.gaussian.gaussians_training_models import *
 from models.gmm.gmm_training_models import *
 from models.svm.svm_training_models import *
 from models.logistic_regression.log_reg_training_models import *
+from models.gaussian.gaussian_all_model import *
 from general.plotting import *
 from general.utils import k_fold, load, mcol
 
@@ -17,8 +18,9 @@ if __name__ == '__main__':
 
 
     #min_dcf = k_fold(dtr, ltr, 5, LR, prior, cfn, cfp, seed=27)
+    gaussians(dtr, ltr)
 
-    cross_val_log_reg(dtr, ltr, prior, cfn, cfp)
+    # cross_val_log_reg(dtr, ltr, prior, cfn, cfp)
 
     # plot_min_dcfs(dtr, ltr, cfn, cfp, svm_linear, pt=0.5, seed=27, svm_params=[1, 2])
     # plot_heatmaps(dtr, ltr, labels)
