@@ -5,12 +5,14 @@ import os
 from models.models import Model
 
 
-def pca(d, n):
+def pca(d, n, eigen_values=False):
     mu = mcol(d.mean(axis=1))
     dc = d - mu
     cov = np.dot(dc, dc.T)
     cov = cov / float(dc.shape[1])
     s, u = np.linalg.eigh(cov)
+    if eigen_values:
+        return s
     return u[:, ::-1][:, 0:n]
 
 
@@ -100,7 +102,7 @@ def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration
     score = []
 
     for ki in range(k):
-        print(f"k_fold: Iterazione {ki + 1}")
+        # print(f"k_fold: Iterazione {ki + 1}")
 
         # DEFINIZIONE TEST SET
         i_test = range(start, stop, 1)
