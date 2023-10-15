@@ -5,6 +5,7 @@ from models.models import Model
 from general.utils import k_fold
 import matplotlib.pyplot as plt
 from general.utils import *
+import os
 
 
 class LR(Model):
@@ -30,7 +31,7 @@ class LR(Model):
         return self.scores
 
     def description(self):
-        return f"LR_l_{self.reg_term}_pt_{self.pt}_"
+        return f"LR_l_{self.reg_term}_pt_{self.pt}"
 
     def folder(self):
         return "LR"
@@ -111,8 +112,8 @@ def cross_val_log_reg(d, l, prior, cfn, cfp):
             for j in range(len(e)):
                 dcf_min = compute_min_dcf(scores, l, e[j], cfn, cfp)
                 mins[j].append(dcf_min)
-            # k += 1
-            # print(f"Iterazione {k}: prior= {eff_p} {label}= {v} => min_dcf= {dcf_min}")
+                k += 1
+                print(f"Iterazione {k}: prior= {e[j]} {label}= {v} => min_dcf= {dcf_min}")
         # min_dcf_list.append(mins.copy())
 
         for i in range(len(mins)):
@@ -122,4 +123,39 @@ def cross_val_log_reg(d, l, prior, cfn, cfp):
         plt.ylabel("minDCF")
         plt.xlim([values[0], values[-1]])
         plt.legend()
+        plt.show()
+
+
+def cross_val_quad_log_reg(d, l, prior, cfn, cfp):
+    values = np.logspace(-5, 5, num=31)
+    label = "$lambda$"
+    e = [0.1, 0.5, 0.9]
+    k = 0
+    z_s = [False, True]
+    for z in z_s:
+        mins = [[], [], []]
+        for v in values:
+            reg_term = v
+            model = QLR(reg_term, prior)
+            scores = k_fold(d, l, 5, model, seed=27, zscore=z)
+            for j in range(len(e)):
+                dcf_min = compute_min_dcf(scores, l, e[j], cfn, cfp)
+                mins[j].append(dcf_min)
+                k += 1
+                print(f"Iterazione {k}: prior= {e[j]} {label}= {v} => min_dcf= {dcf_min}")
+        # min_dcf_list.append(mins.copy())
+
+        for i in range(len(mins)):
+            plt.plot(values, mins[i], label=f"eff_p={e[i]}")
+        plt.xscale("log")
+        plt.xlabel(label)
+        plt.ylabel("minDCF")
+        plt.xlim([values[0], values[-1]])
+        plt.legend()
+        z_desc = ""
+        if z:
+            z_desc = "_zscore"
+        if not os.path.exists("figures/QLR"):
+            os.makedirs("figures/QLR")
+        plt.savefig(f"figures/QLR/QLR{z_desc}")
         plt.show()

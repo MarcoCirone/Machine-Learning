@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 import sys
+import os
+from general.utils import *
 
 sys.path.append("./")
 from general.utils import k_fold, pca
@@ -17,6 +19,7 @@ def hist(d, l, labels):
         plt.legend()
         plt.savefig("figures/histograms/histograms_" + str(i))
         plt.close()
+
 
 def plot_pca(d):
     s = pca(d, d.shape[0] + 1, eigen_values=True)
@@ -289,3 +292,32 @@ def plot_min_dcfs_svm(min_dcf_list, description, values, pt=None):
     #         0.9958333333333333
     #     ]
     # ]
+
+
+def plot_bayes_error(scores, ltr, cfn, cfp, model_desc):
+    effPriorLogOdds = np.linspace(-4, 4, 31)
+    k = 0
+    dcf = []
+    mindcf = []
+    for e in effPriorLogOdds:
+        print(k)
+        k += 1
+        # CALCOLO DCF EFFETTIVO
+        pi = 1 / (1 + np.exp(-e))
+        th = -np.log(pi / (1 - pi))
+        PL = predict_labels(scores, th)
+        conf_matrix = get_confusion_matrix(PL, ltr, 2)
+        dcf.append(compute_dcf(conf_matrix, cfn, cfp, pi))
+        mindcf.append(compute_min_dcf(scores, ltr, pi, cfn, cfp))
+
+    plt.figure()
+    plt.plot(effPriorLogOdds, dcf, label="actDCF", color="r")
+    plt.plot(effPriorLogOdds, mindcf, label="minDCF", color="b")
+    plt.ylim([0, 1])
+    plt.xlim([-4, 4])
+    plt.legend()
+    if not os.path.exists("calibration_plots"):
+        os.makedirs("calibration_plots")
+    plt.savefig(f"calibration_plots/{model_desc}")
+    plt.show()
+

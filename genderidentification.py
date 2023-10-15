@@ -7,23 +7,30 @@ from models.gaussian.gaussian_all_model import *
 from general.plotting import *
 from general.utils import k_fold, load, mcol
 from models.calibration.calibration_model import *
-from general.plotting import plot_min_dcfs
 from general.utils import k_fold, load, mcol, mrow
 
 if __name__ == '__main__':
     dtr, ltr = load("train.txt")
     # dte, lte = load("Test.txt")
     
-    prior = 0.1
+    prior = 0.5
     cfn = 1
     cfp = 1
     labels = ["Male", "Female", "All"]
 
 
     #min_dcf = k_fold(dtr, ltr, 5, LR, prior, cfn, cfp, seed=27)
-    gaussians(dtr, ltr)
+    #gaussians(dtr, ltr)
 
-    cross_val_log_reg(dtr, ltr, prior, cfn, cfp)
+    #cross_val_log_reg(dtr, ltr, prior, cfn, cfp)
+    #cross_val_quad_log_reg(dtr, ltr, prior, cfn, cfp)
+
+    #scores = k_fold(dtr, ltr, 5, LR(0, 0.9), seed=27, zscore=True)
+    #np.save("log_reg_scores", scores)
+    scores = np.load("log_reg_scores.npy")
+    scores1 = calibrate_scores(mrow(scores), ltr, 0.5, "LR")
+
+    plot_bayes_error(scores1, ltr, cfn, cfp, "LR_calibrated")
 
     # scores = mrow(numpy.load("score_models/LR/LR_l_0.0001_pt_0.5_prior_0.1.npy"))
     #
