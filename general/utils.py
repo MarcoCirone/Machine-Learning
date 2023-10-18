@@ -148,7 +148,7 @@ def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration
         if not os.path.exists("score_models/" + model.folder()):
             os.makedirs("score_models/" + model.folder())
 
-        np.save(f"score_models/{model.folder()}/{model.description()}prior_{p}{pca_desc}{z_score_desc}", preshuffle_score)
+        np.save(f"score_models/{model.folder()}/{model.description()}{pca_desc}{z_score_desc}", preshuffle_score)
 
         # thresholds = np.concatenate([np.array([-np.inf]), np.sort(score), np.array([np.inf])])
         # all_dcf = np.zeros(thresholds.shape)
@@ -165,6 +165,7 @@ def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration
             os.makedirs("calibrated_score_models")
         np.save(f"calibrated_score_models/{model_desc}", preshuffle_score)
     return preshuffle_score
+
 
 def compute_min_dcf(scores, l, prior, cfn, cfp):
     thresholds = np.concatenate([np.array([-np.inf]), np.sort(scores), np.array([np.inf])])
