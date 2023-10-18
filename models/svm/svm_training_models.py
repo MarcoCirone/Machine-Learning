@@ -79,7 +79,7 @@ class LinearSvm(SvmModel):
         return self.scores
 
     def description(self):
-        return f"Linear_SVM_{self.C}_pt_{self.pt}_"
+        return f"Linear_SVM_{self.c}_pt_{self.pt}_"
 
     def folder(self):
         return f"Linear_SVM"
@@ -91,12 +91,12 @@ class KernelSvm(SvmModel):
         self.alpha_z = None
 
     def train(self):
-        self.kernel = compute_kernel(self.dtr, self.dtr)
-        alpha, z = compute_svm_steps(kernel)
+        self.kernel = self.compute_kernel(self.dtr, self.dtr)
+        alpha, z = self.compute_svm_steps(self.kernel)
         self.alpha_z = (alpha*z).reshape(1, self.dtr.shape[1])
 
     def get_scores(self):
-        self.scores = np.sum(np.dot(self.alpha_z, compute_kernel(self.dtr, self.dte)), axis=0)
+        self.scores = np.sum(np.dot(self.alpha_z, self.compute_kernel(self.dtr, self.dte)), axis=0)
         return self.scores
 
     @abstractmethod
