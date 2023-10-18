@@ -55,7 +55,7 @@ def logpdf_GMM(x, gmm):
     return s, mrow(logdens)
 
 class GmmModel(Model):
-    def __init__(self, g_num, preprocess="raw"):
+    def __init__(self, g_num=None, preprocess="raw"):
         super().__init__()
         self.alpha = 0.1
         self.psi = 0.01
@@ -63,6 +63,12 @@ class GmmModel(Model):
         self.preprocess = preprocess
         self.g_num = g_num
         self.gmm = []
+
+    def set_values(self, g_num):
+        self.g_num = g_num
+
+    def set_preprocess(self, preprocess):
+        self.preprocess = preprocess
 
     def EM_algorithm(self, x, gmm):
         s, logdens = logpdf_GMM(x, gmm)
@@ -130,7 +136,7 @@ class GmmModel(Model):
         pass
 
 class GMM(GmmModel):
-    def __init__(self, g_num, preprocess="raw"):
+    def __init__(self, g_num=None, preprocess="raw"):
         super().__init__(g_num, preprocess=preprocess)
 
     def description(self):
@@ -147,7 +153,7 @@ class GMM(GmmModel):
         return comp_params(res, x, self.compute_cov, self.psi)
 
 class GMMTied(GmmModel):
-    def __init__(self, g_num, preprocess="raw"):
+    def __init__(self, g_num=None, preprocess="raw"):
         super().__init__(g_num, preprocess=preprocess)
 
     def description(self):
@@ -164,7 +170,7 @@ class GMMTied(GmmModel):
         return comp_params_tied(res, x, self.compute_cov, self.psi)
 
 class GMMDiag(GmmModel):
-    def __init__(self, g_num, preprocess="raw"):
+    def __init__(self, g_num=None, preprocess="raw"):
         super().__init__(g_num, preprocess=preprocess)
 
     def description(self):
@@ -181,7 +187,7 @@ class GMMDiag(GmmModel):
         return comp_params(res, x, self.compute_cov, self.psi)
 
 class GMMTiedDiag(GmmModel):
-    def __init__(self, g_num, preprocess="raw"):
+    def __init__(self, g_num=None, preprocess="raw"):
         super().__init__(g_num, preprocess=preprocess)
 
     def description(self):
