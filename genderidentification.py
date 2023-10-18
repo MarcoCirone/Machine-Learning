@@ -2,6 +2,7 @@ import numpy as np
 from models.gaussian.gaussians_training_models import *
 from models.gmm.gmm_training_models import *
 from models.svm.svm_training_models import *
+from models.svm.svm_cross_validation import *
 from models.logistic_regression.log_reg_training_models import *
 from models.gaussian.gaussian_all_model import *
 from general.plotting import *
@@ -17,6 +18,7 @@ if __name__ == '__main__':
     cfn = 1
     cfp = 1
     labels = ["Male", "Female", "All"]
+    cross_validation_for_all_svm(dtr, ltr)
 
 
     #min_dcf = k_fold(dtr, ltr, 5, LR, prior, cfn, cfp, seed=27)
@@ -46,14 +48,14 @@ if __name__ == '__main__':
     # plot_bayes_error(scores, ltr, cfn, cfp, "TMVG_uncalibrated")
     # plot_bayes_error(scores1, ltr, cfn, cfp, "TMVG_calibrated")
 
-    svm_scores = np.load("calibrated_score_models/SVM.npy")
-    lr_scores = np.load("calibrated_score_models/LR.npy")
-
-    new_scores = fusion([svm_scores, lr_scores], ltr, 0.5, "SVM+LR")
-    np.save("svm+lr", new_scores)
-    plot_bayes_error(new_scores, ltr, cfn, cfp, "SVM+LR_uncalibrated")
-
-    # scores = mrow(numpy.load("score_models/LR/LR_l_0.0001_pt_0.5_prior_0.1.npy"))
+    # svm_scores = np.load("calibrated_score_models/SVM.npy")
+    # lr_scores = np.load("calibrated_score_models/LR.npy")
+    #
+    # new_scores = fusion([svm_scores, lr_scores], ltr, 0.5, "SVM+LR")
+    # np.save("svm+lr", new_scores)
+    # plot_bayes_error(new_scores, ltr, cfn, cfp, "SVM+LR_uncalibrated")
+    #
+    # # scores = mrow(numpy.load("score_models/LR/LR_l_0.0001_pt_0.5_prior_0.1.npy"))
     # calibrate_scores(scores, ltr, prior, "LR_l_0.0001_pt_0.5_prior_0.1")
     # old_score_models = numpy.load("score_models/LR/LR_l_0.0001_pt_0.5_prior_0.1.npy")
     # calibrate_score = numpy.load("calibrated_score_models/LR_l_0.0001_pt_0.5_prior_0.1.npy")

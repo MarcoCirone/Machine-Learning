@@ -15,11 +15,12 @@ def dual_obj_wrap(h):
     return dual_obj
 
 class SvmModel(Model):
-    def __init__(self, c=None, k=1, pt=None):
+    def __init__(self, c=None, k=1, pt=None, preprocess="Raw"):
         super().__init__()
         self.k = k
         self.c = c
         self.pt = pt
+        self.preprocess = preprocess
 
     @abstractmethod
     def train(self):
@@ -63,8 +64,8 @@ class SvmModel(Model):
         return alpha, z
 
 class LinearSvm(SvmModel):
-    def __init__(self, c=None, k=1, pt=None):
-        super().__init__(c, k, pt)
+    def __init__(self, c=None, k=1, pt=None, preprocess="Raw"):
+        super().__init__(c, k, pt, preprocess)
         self.w = None
 
     def train(self):
@@ -82,11 +83,11 @@ class LinearSvm(SvmModel):
         return f"Linear_SVM_{self.c}_pt_{self.pt}_"
 
     def folder(self):
-        return f"Linear_SVM"
+        return f"Linear_SVM/{self.preprocess}"
 
 class KernelSvm(SvmModel):
-    def __init__(self, c, k, pt):
-        super().__init__(c, k, pt)
+    def __init__(self, c, k, pt, preprocess="Raw"):
+        super().__init__(c, k, pt, preprocess)
         self.kernel = None
         self.alpha_z = None
 
@@ -112,24 +113,24 @@ class KernelSvm(SvmModel):
         pass
 
 class PolSvm(KernelSvm):
-    def __init__(self, constant, dimension, c=None, k=1, pt=None):
-        super().__init__(c, k, pt)
+    def __init__(self, constant, dimension, c=None, k=1, pt=None, preprocess="Raw"):
+        super().__init__(c, k, pt, preprocess)
         self.constant = constant
         self.dimension = dimension
 
     def compute_kernel(self, d1, d2):
-        self.kernel = ((np.dot(d1.T, d2) + self.constant) ** self.dimension) + self.k ** 2
+        return ((np.dot(d1.T, d2) + self.constant) ** self.dimension) + self.k ** 2
 
     def description(self):
-        return f"Polinomial_SVM_{self.C}_pt_{self.pt}_c_{self.constant}_d_{self.dimension}"
+        return f"Polinomial_SVM_{self.c}_pt_{self.pt}_c_{self.constant}_d_{self.dimension}"
 
     def folder(self):
-        return f"Polinomial_SVM"
+        return f"Polinomial_SVM/{self.preprocess}"
 
 class RbfSvm(KernelSvm):
 
-    def __init__(self, gamma, c=None, k=1, pt=None):
-        super().__init__(c, k, pt)
+    def __init__(self, gamma, c=None, k=1, pt=None, preprocess="Raw"):
+        super().__init__(c, k, pt, preprocess)
         self.gamma = gamma
 
     def compute_kernel(self, d1, d2):
@@ -137,10 +138,10 @@ class RbfSvm(KernelSvm):
         for i in range(d1.shape[1]):
             for j in range(d2.shape[1]):
                 rbf_kernel[i, j] = np.exp(-self.gamma * (np.linalg.norm(d1[:, i] - d2[:, j]) ** 2)) + self.k ** 2
-        self.kernel = rbf_kernel
+        return rbf_kernel
 
     def description(self):
-        return f"Rbf_SVM_{self.C}_pt_{self.pt}_gamma_{self.gamma}"
+        return f"Rbf_SVM_{self.c}_pt_{self.pt}_gamma_{self.gamma}"
 
     def folder(self):
-        return f"Rbf_SVM"
+        return f"Rbf_SVM/{self.preprocess}"
