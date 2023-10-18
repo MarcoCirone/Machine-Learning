@@ -18,13 +18,14 @@ def compute_min_dcf_for_all(l, model, zscore, name): # name = model + k+ (gamma 
     cfp = 1
     min_dcf_list = []
     prior = [0.5, 0.1, 0.9]
+    c_values = np.logspace(-5, 5, 31)
     pt = 0.5
     for p in prior:
         min_dcf = []
         for c in c_values:
             print(f"prior = {p}, c = {c}, pt = {pt}")
             model.set_values(c, pt)
-            score = load(f"score_models/{model.folder()}/{model.description}{"_zscore" if zscore else ""}.npy")
+            score = np.load(f"score_models/{model.folder()}/{model.description}{"_zscore" if zscore else ""}.npy")
             m_dcf = compute_min_dcf(score, l, p, cfn, cfp)
             min_dcf.append(m_dcf)
         min_dcf_list.append(min_dcf)
@@ -71,10 +72,10 @@ def cross_validation_for_all_svm(d, l):
     # cv_pol_svm(d, l)
     # print("_____POLINOMIAL SVM with Z Score_____")
     # cv_pol_svm(d, l, zscore=True)
-    print("_____RBF SVM without Z Score_____")
-    cv_rbf_svm(d, l)
-    # print("_____RBF SVM with Z Score_____")
-    # cv_rbf_svm(d, l, zscore=True)
+    # print("_____RBF SVM without Z Score_____")
+    # cv_rbf_svm(d, l)
+    print("_____RBF SVM with Z Score_____")
+    cv_rbf_svm(d, l, zscore=True)
 
 
 
