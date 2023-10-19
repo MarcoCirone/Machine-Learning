@@ -122,7 +122,7 @@ class PolSvm(KernelSvm):
         return ((np.dot(d1.T, d2) + self.constant) ** self.dimension) + self.k ** 2
 
     def description(self):
-        return f"Polinomial_SVM_{self.c}_pt_{self.pt}_c_{self.constant}_d_{self.dimension}"
+        return f"Polinomial_SVM_{self.c}_k_{self.k}_pt_{self.pt}_c_{self.constant}_d_{self.dimension}"
 
     def folder(self):
         return f"Polinomial_SVM/{self.preprocess}"
@@ -141,7 +141,7 @@ class RbfSvm(KernelSvm):
         return rbf_kernel
 
     def description(self):
-        return f"Rbf_SVM_{self.c}_pt_{self.pt}_gamma_{self.gamma}"
+        return f"Rbf_SVM_{self.c}_k_{self.k}_pt_{self.pt}_gamma_{self.gamma}"
 
     def folder(self):
         return f"Rbf_SVM/{self.preprocess}"
