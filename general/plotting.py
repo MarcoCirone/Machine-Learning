@@ -76,16 +76,17 @@ def plot_min_dcfs_svm(min_dcf_list, description, values, pt=None):
     label = "C"
     folder = "SVM"
     e = [0.5, 0.1, 0.9]
-
+    # e = [0.001, 0.01, 0.1]
+    # e = [0.1, 1, 10]
     for i in range(len(min_dcf_list)):
-        plt.plot(values, min_dcf_list[i], label=f"eff_p={e[i]}")
+        plt.plot(values, min_dcf_list[i], label=f"prior={e[i]}")
     plt.xscale("log")
     plt.xlabel(label)
     plt.ylabel("minDCF")
     plt.xlim([values[0], values[-1]])
     plt.ylim([0, 1])
     plt.legend()
-    plt.savefig("figures/"+folder+description+"_pt:"+str(pt))
+    plt.savefig(f"figures/{folder}/{description}_pt_{pt}")
     plt.close()
 
     # # svm mie
