@@ -25,14 +25,13 @@ def compute_min_dcf_for_all(l, model, zscore, name): # name = model + k+ (gamma 
         for c in c_values:
             print(f"prior = {p}, c = {c}, pt = {pt}")
             model.set_values(c, pt)
-            score = np.load(f"score_models/{model.folder()}/{model.description}{"_zscore" if zscore else ""}.npy")
+            score = np.load(f"score_models/{model.folder()}/{model.description()}{"_zscore" if zscore else ""}.npy")
             m_dcf = compute_min_dcf(score, l, p, cfn, cfp)
             min_dcf.append(m_dcf)
         min_dcf_list.append(min_dcf)
     if not os.path.exists("min_dcf_models/" + model.folder()):
         os.makedirs("min_dcf_models/" + model.folder())
     np.save(f"min_dcf_models/{model.folder()}/{name}_pt_{pt}{"_zscore" if zscore else ""}", min_dcf_list)
-    # plot_min_dcfs_svm(min_dcf_list, model.description, c_values)
 
 def cv_linear_svm(d, l, zscore=False):
     k_values = [0.01, 0.1, 1, 10, 100]
@@ -50,8 +49,9 @@ def cv_pol_svm(d, l, zscore=False):
         print(f"constant = {c}")
         for k in k_values:
             pol_svm = PolSvm(c, dim, k=k, preprocess="z_score" if zscore else"raw")
-            cross_validation_for_svm(d, l, pol_svm, zscore)
-            # compute_min_dcf_for_all(l, pol_svm, zscore, f"Polinomial_SVM_k_{k}_constant_{c}_dim_{dim}_")
+            # cross_validation_for_svm(d, l, pol_svm, zscore)
+            compute_min_dcf_for_all(l, pol_svm, zscore, f"Polinomial_SVM_k_{k}_constant_{c}_dim_{dim}_")
+
 
 def cv_rbf_svm(d, l, zscore=False):
     k_values = [0.1, 1, 10]
@@ -60,20 +60,20 @@ def cv_rbf_svm(d, l, zscore=False):
         print(f"gamma = {g}")
         for k in k_values:
             rbf_svm = RbfSvm(g, k=k, preprocess="z_score" if zscore else"raw")
-            cross_validation_for_svm(d, l, rbf_svm, zscore)
-            # compute_min_dcf_for_all(l, pol_svm, zscore, f"Rbf_SVM_k_{k}_gamma_{g}_")
+            # cross_validation_for_svm(d, l, rbf_svm, zscore)
+            compute_min_dcf_for_all(l, rbf_svm, zscore, f"Rbf_SVM_k_{k}_gamma_{g}_")
 
 def cross_validation_for_all_svm(d, l):
     # print("_____LINEAR SVM without Z Score_____")
     # cv_linear_svm(d, l)
     # print("_____LINEAR SVM with Z Score_____")
     # cv_linear_svm(d, l, zscore=True)
-    print("_____POLINOMIAL SVM without Z Score_____")
-    cv_pol_svm(d, l)
+    # print("_____POLINOMIAL SVM without Z Score_____")
+    # cv_pol_svm(d, l)
     # print("_____POLINOMIAL SVM with Z Score_____")
     # cv_pol_svm(d, l, zscore=True)
-    # print("_____RBF SVM without Z Score_____")
-    # cv_rbf_svm(d, l)
+    print("_____RBF SVM without Z Score_____")
+    cv_rbf_svm(d, l)
     # print("_____RBF SVM with Z Score_____")
     # cv_rbf_svm(d, l, zscore=True)
 
