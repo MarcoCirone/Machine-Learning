@@ -101,30 +101,32 @@ class GmmModel(Model):
 
         while len(gmm) < self.g_num:
             gmm_1 = []
-            for g in gmm:
-                u, s, vh = np.linalg.svd(g[2])
+            for i in range(len(gmm)):
+                u, s, vh = np.linalg.svd(gmm[i][2])
                 d = u[:, 0:1] * s[0] ** 0.5 * self.alpha
-                w = g[0] / 2
-                mu1 = g[1] + d
+                w = gmm[i][0] / 2
+                mu1 = gmm[i][1] + d
                 mu2 = mu1 - 2 * d
-                gmm_1.append((w, mu1, g[2]))
-                gmm_1.append((w, mu2, g[2]))
+                gmm_1.append((w, mu1, gmm[i][2]))
+                gmm_1.append((w, mu2, gmm[i][2]))
             gmm = self.EM_algorithm(x, gmm_1)
         return gmm
 
     def train(self):
+        self.gmm = []
         for i in range(max(self.ltr)+1):
             x = self.dtr[:, self.ltr == i]
             self.gmm.append(self.LBG_algorithm(x))
 
     def get_scores(self):
-        self.scores = np.zeros(self.dte.shape[1])
+        scores = np.zeros(self.dte.shape[1])
         for j in range(self.dte.shape[1]):
             tmp_score = []
             for gmm in self.gmm:
                 _, logdens = logpdf_GMM(mcol(self.dte[:, j]), gmm)
                 tmp_score.append(logdens)
-            self.scores[j] = tmp_score[1] - tmp_score[0]
+            scores[j] = tmp_score[1] - tmp_score[0]
+        self.scores=scores
         return self.scores
 
     @abstractmethod
