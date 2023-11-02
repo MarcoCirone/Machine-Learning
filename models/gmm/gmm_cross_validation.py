@@ -4,9 +4,9 @@ from general.utils import k_fold, compute_min_dcf
 import os
 
 def cross_validation_for_gmm(d, l, model, zscore, pca):
-    gmm_values = []
+    gmm_values = [range(6)]
     for gmm in gmm_values:
-        model.set_values(gmm)
+        model.set_values(2**gmm)
         print(f"g_num = {model.g_num} ")
         score = k_fold(d, l, 5, model, seed=27, zscore=zscore, pca_m=pca)
 

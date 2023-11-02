@@ -80,7 +80,7 @@ class GmmModel(Model):
             new_gmm = self.function_params(res, x)
             new_s, new_logdens = logpdf_GMM(x, new_gmm)
             new_log = new_logdens.sum() / x.shape[1]
-            if new_log - old_log < stop:
+            if new_log - old_log < self.stop:
                 break
             else:
                 logdens = new_logdens
@@ -113,16 +113,16 @@ class GmmModel(Model):
         return gmm
 
     def train(self):
-        for i in range(2):
+        for i in range(max(self.ltr)+1):
             x = self.dtr[:, self.ltr == i]
             self.gmm.append(self.LBG_algorithm(x))
 
     def get_scores(self):
         self.scores = np.zeros(self.dte.shape[1])
-        for j in range(dte.shape[1]):
+        for j in range(self.dte.shape[1]):
             tmp_score = []
             for gmm in self.gmm:
-                _, logdens = logpdf_GMM(mcol(self.dte[:, j]), gmm[i])
+                _, logdens = logpdf_GMM(mcol(self.dte[:, j]), gmm)
                 tmp_score.append(logdens)
             self.scores[j] = tmp_score[1] - tmp_score[0]
         return self.scores
