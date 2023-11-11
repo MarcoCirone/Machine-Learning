@@ -1,6 +1,7 @@
 import numpy as np
 from models.gaussian.gaussians_training_models import *
 from models.gmm.gmm_training_models import *
+from models.gmm.gmm_cross_validation import *
 from models.svm.svm_training_models import *
 from models.svm.svm_cross_validation import *
 from models.logistic_regression.log_reg_training_models import *
@@ -21,11 +22,11 @@ if __name__ == '__main__':
     labels = ["Male", "Female", "All"]
     # cross_validation_for_all_svm(dtr, ltr)
 
-    gmm = GMMDiag(g_num=4)
+    # gmm = GMMDiag(g_num=4)
+    cross_validation_for_all_gmm(dtr, ltr)
 
-
-    score = k_fold(dtr, ltr, 5, gmm, seed=27)
-    min_dcf_models = compute_min_dcf(score, ltr, prior, cfn, cfp)
+    # score = k_fold(dtr, ltr, 5, gmm, seed=27)
+    # min_dcf_models = compute_min_dcf(score, ltr, prior, cfn, cfp)
 
 
     #min_dcf = k_fold(dtr, ltr, 5, LR, prior, cfn, cfp, seed=27)

@@ -4,7 +4,7 @@ from general.utils import k_fold, compute_min_dcf
 import os
 
 def cross_validation_for_gmm(d, l, model, zscore, pca):
-    gmm_values = [range(1, 7)]
+    gmm_values = [6]
     for gmm in gmm_values:
         model.set_values(2**gmm)
         print(f"g_num = {model.g_num} ")
@@ -60,9 +60,9 @@ def gmm_pca(d, l, model, zscore=False):
         model.__init__()
 
 def cross_validation_for_all_gmm(d, l):
-    for model in [GMM(), GMMTied(), GMMDiag(), GMMTiedDiag()]:
+    for model in [GMM(),GMMTied(), GMMDiag(), GMMTiedDiag()]:
         print(f"_____{model.folder()} without Z Score____")
         gmm_pca(d, l, model)
-        print(f"_____{model.folder()} with Z Score____")
-        gmm_pca(d, l, model, zscore=True)
+        # print(f"_____{model.folder()} with Z Score____")
+        # gmm_pca(d, l, model, zscore=True)
 
