@@ -1,14 +1,20 @@
 import numpy as np
 import math
 import scipy
+import os
+from models.models import Model
 
-def pca(d, n):
+
+def pca(d, n, eigen_values=False):
     mu = mcol(d.mean(axis=1))
     dc = d - mu
     cov = np.dot(dc, dc.T)
     cov = cov / float(dc.shape[1])
     s, u = np.linalg.eigh(cov)
+    if eigen_values:
+        return s
     return u[:, ::-1][:, 0:n]
+
 
 def z_score(dtr, dte=None):
     mu = mcol(dtr.mean(1))
@@ -17,6 +23,7 @@ def z_score(dtr, dte=None):
     if dte is not None:
         dte = (dte - mu) / std
     return dtr, dte
+
 
 def lda(d, l, n):
     mu = mcol(d.mean(axis=1))
@@ -33,6 +40,7 @@ def lda(d, l, n):
     w = u[:, ::-1][:, 0:n]
     return w
 
+
 def load(file):
     d = []
     l = []
@@ -45,8 +53,10 @@ def load(file):
             l.append(label)
     return np.hstack(d), np.array(l, dtype=np.int32)
 
+
 def mcol(v):
     return v.reshape((v.size, 1))
+
 
 def mrow(v):
     return v.reshape([1, v.size])
@@ -71,7 +81,10 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_params=None, pt=None, reg_term=None, zscore=False):     #svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
+def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration=False, model_desc=None):     # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
+    #ti prego pusha
+    pca_desc = ""
+    z_score_desc = ""
 
     n_test = math.ceil(d.shape[1]/k)
 
@@ -89,11 +102,12 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_para
     score = []
 
     for ki in range(k):
-        print(f"k_fold: Iterazione {ki + 1}")
+        # print(f"k_fold: Iterazione {ki + 1}")
 
         # DEFINIZIONE TEST SET
         i_test = range(start, stop, 1)
         dte = rd[:, i_test]
+        lte = rl[i_test]
 
         # DEFINIZIONE TRAINING SET
         i_train = []
@@ -104,26 +118,20 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_para
 
         if zscore:
             dtr, dte = z_score(dtr, dte)
+            z_score_desc = "_zscore"
 
         if pca_m is not None:
             # PCA
             p1 = pca(dtr, pca_m)
             dtr = np.dot(p1.T, dtr)
             dte = np.dot(p1.T, dte)
-
+            pca_desc = f"_pca_{pca_m}"
 
         ltr = rl[i_train]
 
-        if g_num is None:
-            if svm_params is None:
-                if reg_term is None:
-                    score.append(model(dtr, ltr, dte))
-                else:
-                    score.append(model(dtr, ltr, reg_term, pt))
-            else:
-                score.append(model(dtr, ltr, dte,  svm_params, pt))
-        else:
-            score.append(model(dtr, ltr, dte, g_num))
+        model.set_data(dtr, ltr, dte, lte)
+        model.train()
+        score.append(model.get_scores())
 
         start += n_test
         stop += n_test
@@ -136,17 +144,41 @@ def k_fold(d, l, k, model, p, cfn, cfp, seed=0, g_num=None, pca_m=None, svm_para
     for i in range(d.shape[1]):
         preshuffle_score[idx[i]] = score[i]
 
-    thresholds = np.concatenate([np.array([-np.inf]), np.sort(score), np.array([np.inf])])
+    if not calibration:
+        if not os.path.exists("score_models/" + model.folder()):
+            os.makedirs("score_models/" + model.folder())
+
+        np.save(f"score_models/{model.folder()}/{model.description()}{pca_desc}{z_score_desc}", preshuffle_score)
+
+        # thresholds = np.concatenate([np.array([-np.inf]), np.sort(score), np.array([np.inf])])
+        # all_dcf = np.zeros(thresholds.shape)
+        #
+        # for i in range(thresholds.shape[0]):
+        #
+        #     pl = predict_labels(preshuffle_score, thresholds[i])
+        #     conf_matrix = get_confusion_matrix(pl, l, l.max() + 1)
+        #
+        #     all_dcf[i] = compute_dcf(conf_matrix, cfn, cfp, p)
+    else:
+        preshuffle_score -= np.log(p/(1-p))
+        if not os.path.exists("calibrated_score_models"):
+            os.makedirs("calibrated_score_models")
+        np.save(f"calibrated_score_models/{model_desc}", preshuffle_score)
+    return preshuffle_score
+
+
+def compute_min_dcf(scores, l, prior, cfn, cfp):
+    thresholds = np.concatenate([np.array([-np.inf]), np.sort(scores), np.array([np.inf])])
     all_dcf = np.zeros(thresholds.shape)
 
     for i in range(thresholds.shape[0]):
-
-        pl = predict_labels(preshuffle_score, thresholds[i])
+        pl = predict_labels(scores, thresholds[i])
         conf_matrix = get_confusion_matrix(pl, l, l.max() + 1)
 
-        all_dcf[i] = compute_dcf(conf_matrix, cfn, cfp, p)
+        all_dcf[i] = compute_dcf(conf_matrix, cfn, cfp, prior)
 
     return all_dcf.min()
+
 
 def predict_labels(scores, th):
     labels = np.zeros(scores.shape[0])
