@@ -32,6 +32,7 @@ def compute_min_dcf_for_all(l, model, zscore, name): # name = model + k+ (gamma 
     if not os.path.exists("min_dcf_models/" + model.folder()):
         os.makedirs("min_dcf_models/" + model.folder())
     np.save(f"min_dcf_models/{model.folder()}/{name}_pt_{pt}{"_zscore" if zscore else ""}", min_dcf_list)
+
     # plot_min_dcfs_svm(min_dcf_list, model.description(), c_values)
 
 def plot_rbf_svm( name, zscore):
@@ -73,19 +74,22 @@ def cv_pol_svm(d, l, zscore=False):
         print(f"constant = {c}")
         for k in k_values:
             pol_svm = PolSvm(c, dim, k=k, preprocess="z_score" if zscore else"raw")
-            cross_validation_for_svm(d, l, pol_svm, zscore)
-            # compute_min_dcf_for_all(l, pol_svm, zscore, f"Polinomial_SVM_k_{k}_constant_{c}_dim_{dim}_")
+            # cross_validation_for_svm(d, l, pol_svm, zscore)
+            compute_min_dcf_for_all(l, pol_svm, zscore, f"Polinomial_SVM_k_{k}_constant_{c}_dim_{dim}_")
+
 
 def cv_rbf_svm(d, l, zscore=False):
     k_values = [1]
     gamma = [0.001, 0.01, 0.1]
     for g in gamma:
         print(f"gamma = {g}")
+
         # for k in k_values:
         #     rbf_svm = RbfSvm(g, k=k, preprocess="z_score" if zscore else"raw")
         #     # cross_validation_for_svm(d, l, rbf_svm, zscore)
         #     # compute_min_dcf_for_all(l, rbf_svm, zscore, f"Rbf_SVM_k_{k}_gamma_{g}_")
         plot_rbf_svm( f"Rbf_SVM", zscore)
+
 
 def cross_validation_for_all_svm(d, l):
     # print("_____LINEAR SVM without Z Score_____")
