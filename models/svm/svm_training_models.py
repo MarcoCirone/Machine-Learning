@@ -80,7 +80,7 @@ class LinearSvm(SvmModel):
         return self.scores
 
     def description(self):
-        return f"Linear_SVM_{self.c}_pt_{self.pt}_"
+        return f"Linear_SVM_{self.c}_k_{self.k}_pt_{self.pt}_"
 
     def folder(self):
         return f"Linear_SVM/{self.preprocess}"
