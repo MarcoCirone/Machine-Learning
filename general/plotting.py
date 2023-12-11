@@ -111,7 +111,7 @@ def plot_bayes_error(scores, ltr, cfn, cfp, model_desc):
     dcf = []
     mindcf = []
     for e in effPriorLogOdds:
-        print(k)
+        # print(k)
         k += 1
         # CALCOLO DCF EFFETTIVO
         pi = 1 / (1 + np.exp(-e))
@@ -127,8 +127,8 @@ def plot_bayes_error(scores, ltr, cfn, cfp, model_desc):
     plt.ylim([0, 1])
     plt.xlim([-4, 4])
     plt.legend()
-    if not os.path.exists("calibration_plots"):
-        os.makedirs("calibration_plots")
-    plt.savefig(f"calibration_plots/{model_desc}")
+    if not os.path.exists("figures/bayes_error_plots"):
+        os.makedirs("figures/bayes_error_plots")
+    plt.savefig(f"figures/bayes_error_plots/{model_desc}")
     plt.show()
 
