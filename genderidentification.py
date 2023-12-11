@@ -23,51 +23,36 @@ if __name__ == '__main__':
     # cross_validation_for_all_svm(dtr, ltr)
 
     # gmm = GMMDiag(g_num=4)
-    cross_validation_for_all_gmm(dtr, ltr)
+    # cross_validation_for_all_gmm(dtr, ltr)
 
-    # score = k_fold(dtr, ltr, 5, gmm, seed=27)
-    # min_dcf_models = compute_min_dcf(score, ltr, prior, cfn, cfp)
+    # for z_score in [True]:
+    #     for pt in [0.1, 0.9]:
+    #         print(f"pt={pt}, zscore={z_score}")
+    #         k_fold(dtr, ltr, 5, QLR(10**-5, pt), seed=27, zscore=z_score)
 
+    best_model_scores = ["score_models/Tied/Tied_prior_None.npy",
+                         "score_models/LR/LR_l_1e-05_pt_0.5.npy",
+                         "score_models/Linear_SVM/raw/Linear_SVM_1_k_1_pt_0.9_.npy",
+                         "score_models/Rbf_SVM/raw/Rbf_SVM_10.0_k_1_pt_0.5_gamma_0.001.npy",
+                         "score_models/GMM/raw/pca/GMM_4__pca_11.npy",
+                         "score_models/Tied_GMM_/z_score/Tied_GMM_8__pca_11_zscore.npy"]
 
-    #min_dcf = k_fold(dtr, ltr, 5, LR, prior, cfn, cfp, seed=27)
-    #gaussians(dtr, ltr)
+    models_desc = ["TMVG", "LR", "Linear_SVM", "RBF_SVM", "GMM", "Tied_GMM"]
 
-    # cross_val_log_reg(dtr, ltr, prior, cfn, cfp)
-    # cross_val_quad_log_reg(dtr, ltr, prior, cfn, cfp)
+    calibrated_models_desc = ["Calibrated_TMVG",
+                              "Calibrated_LR",
+                              "Calibrated_Linear_SVM",
+                              "Calibrated_RBF_SVM",
+                              "Calibrated_GMM",
+                              "Calibrated_Tied_GMM"]
 
-    # scores = k_fold(dtr, ltr, 5, LR(0, 0.9), seed=27, zscore=True)
-    # np.save("log_reg_scores", scores)
-    # scores = np.load("log_reg_scores.npy")
-    # scores1 = calibrate_scores(mrow(scores), ltr, 0.5, "LR")
-    # plot_bayes_error(scores, ltr, cfn, cfp, "LR_uncalibrated")
-    # plot_bayes_error(scores1, ltr, cfn, cfp, "LR_calibrated")
+    for i in range(len(best_model_scores)):
+        print(calibrated_models_desc[i])
+        uncalibrated_scores = np.load(best_model_scores[i])
+        calibrated_scores = calibrate_scores(mrow(uncalibrated_scores), ltr, prior, calibrated_models_desc[i])
+        plot_bayes_error(uncalibrated_scores, ltr, cfn, cfp, models_desc[i])
+        plot_bayes_error(calibrated_scores, ltr, cfn, cfp, calibrated_models_desc[i])
 
-    # scores = k_fold(dtr, ltr, 5, LinearSvm(c=10, k=1, pt=0.5), seed=27, zscore=True)
-    # np.save("svm_scores", scores)
-    # scores = np.load("svm_scores.npy")
-    # scores1 = calibrate_scores(mrow(scores), ltr, 0.5, "SVM")
-    # plot_bayes_error(scores, ltr, cfn, cfp, "SVM_uncalibrated")
-    # plot_bayes_error(scores1, ltr, cfn, cfp, "SVM_calibrated")
-
-    # scores = k_fold(dtr, ltr, 5, MVGTied(), seed=27, pca_m=12)
-    # np.save("TMVG_scores", scores)
-    # scores = np.load("TMVG_scores.npy")
-    # scores1 = calibrate_scores(mrow(scores), ltr, 0.5, "TMVG")
-    # plot_bayes_error(scores, ltr, cfn, cfp, "TMVG_uncalibrated")
-    # plot_bayes_error(scores1, ltr, cfn, cfp, "TMVG_calibrated")
-
-    # svm_scores = np.load("calibrated_score_models/SVM.npy")
-    # lr_scores = np.load("calibrated_score_models/LR.npy")
-    #
-    # new_scores = fusion([svm_scores, lr_scores], ltr, 0.5, "SVM+LR")
-    # np.save("svm+lr", new_scores)
-    # plot_bayes_error(new_scores, ltr, cfn, cfp, "SVM+LR_uncalibrated")
-    #
-    # # scores = mrow(np.load("score_models/LR/LR_l_0.0001_pt_0.5_prior_0.1.npy"))
-    # calibrate_scores(scores, ltr, prior, "LR_l_0.0001_pt_0.5_prior_0.1")
-    # old_score_models = np.load("score_models/LR/LR_l_0.0001_pt_0.5_prior_0.1.npy")
-    # calibrate_score = np.load("calibrated_score_models/LR_l_0.0001_pt_0.5_prior_0.1.npy")
-    # plot_min_dcfs(dtr, ltr, cfn, cfp, svm_linear, pt=0.5, seed=27, svm_params=[1, 2])
     # plot_heatmaps(dtr, ltr, labels)
     # plot_pca(dtr)
     # scatter_2d(dtr, ltr, labels)
