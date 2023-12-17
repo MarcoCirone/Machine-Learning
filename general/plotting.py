@@ -17,7 +17,7 @@ def hist(d, l, labels):
             plt.hist(x.reshape(x.size, ), alpha=0.4, label=labels[c], bins=70, density=True, linewidth=1.0)
         plt.xlabel(f'Dimension {i + 1}')
         plt.legend()
-        plt.savefig("figures/histograms/histograms_" + str(i))
+        plt.savefig("figures/lda_histograms_" + str(i))
         plt.close()
 
 
@@ -29,13 +29,14 @@ def plot_pca(d):
     plt.plot(range(1, s.size + 1), evr, marker='o')
     plt.xlabel('Dimensions')
     plt.ylabel('Fraction of explained variance')
+    plt.grid(True)
     plt.savefig("figures/pca_var.png")
     plt.close()
 
 
 def plot_heatmaps(d, l, labels):
     classes = [0, 1, None]
-    colors = ["Blues", "hot", "Greys"]
+    colors = ["Blues", "Reds", "Greys"]
     for c in range(3):
         if classes[c] is None:
             data = d
@@ -51,6 +52,11 @@ def plot_heatmaps(d, l, labels):
         plt.xticks(np.arange(0, data.shape[0]), np.arange(1, data.shape[0] + 1))
         plt.yticks(np.arange(0, data.shape[0]), np.arange(1, data.shape[0] + 1))
         plt.imshow(heatmap, cmap=colors[c])
+        rows, cols = heatmap.shape
+        for i in range(rows):
+            for j in range(cols):
+                plt.text(j, i, f'{heatmap[i, j]:.1f}', ha='center', va='center',
+                         color='white' if round(heatmap[i, j], 1) >= 0.8 else 'black')
         plt.colorbar()
         plt.savefig("figures/heatmaps/heatmaps_" + labels[c])
         plt.close()
