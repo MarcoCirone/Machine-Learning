@@ -64,5 +64,6 @@ def evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp):
             print(f"{p} => {compute_min_dcf(scores, lte, p, cfn, cfp)} ", end="")
         print("\n")
 
+
 def evaluate_fusion(ltr, lte, prior, cfn, cfp):
     fusion_models = []

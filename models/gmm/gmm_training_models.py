@@ -204,7 +204,3 @@ class GMMTiedDiag(GmmModel):
 
     def function_params(self, res, x):
         return comp_params_tied(res, x, self.compute_cov, self.psi)
-
-
-
-
