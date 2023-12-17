@@ -105,6 +105,7 @@ def plot_min_dcfs_gmm(min_dcf_list, min_dcf_list_zscore, description, values):
     plt.savefig(f"figures/{folder}/{description}")
     plt.close()
 
+
 def plot_bayes_error(scores, ltr, cfn, cfp, model_desc):
     effPriorLogOdds = np.linspace(-4, 4, 31)
     k = 0
@@ -126,6 +127,8 @@ def plot_bayes_error(scores, ltr, cfn, cfp, model_desc):
     plt.plot(effPriorLogOdds, mindcf, label="minDCF", color="b")
     plt.ylim([0, 1])
     plt.xlim([-4, 4])
+    plt.xlabel("Threshold")
+    plt.ylabel("DCF")
     plt.legend()
     if not os.path.exists("figures/bayes_error_plots"):
         os.makedirs("figures/bayes_error_plots")
