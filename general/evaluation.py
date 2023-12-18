@@ -8,7 +8,8 @@ import numpy as np
 import os
 
 
-def get_evaluation_scores(dtr, ltr, dte, lte, model, p=None, pca_m=None, zscore=False, calibration=False, fusion=False, model_desc=None):
+def get_evaluation_scores(dtr, ltr, dte, lte, model, p=None, pca_m=None, zscore=False, calibration=False, fusion=False,
+                          model_desc=None):
     if zscore:
         dtr, dte = z_score(dtr, dte)
 
@@ -43,12 +44,12 @@ def get_evaluation_scores(dtr, ltr, dte, lte, model, p=None, pca_m=None, zscore=
 def evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp):
     # for each model we store the model itself, the dimension of pca, the presence of z-score, if calibration is used
     # and their description
-    best_models = [#(MVGTied(), None, False, False, "TMVG"),
-                   #(LR(10**(-5), 0.5), None, False, False, "LR"),
+    best_models = [(MVGTied(), None, False, False, "TMVG"),
+                   (LR(10**(-5), 0.5), None, False, False, "LR"),
                    (LinearSvm(1, 1, 0.9), None, False, True, "Linear_SVM"),
                    (RbfSvm(10**(-3), 10, 1, 0.5), None, False, True, "RBF_SVM"),
                    (GMM(4), 11, False, True, "GMM"),
-                   ]#(GMMTied(8), 11, True, False, "Tied_GMM")]
+                   (GMMTied(8), 11, True, False, "Tied_GMM")]
 
     for model in best_models:
         print(model[4])
@@ -65,5 +66,51 @@ def evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp):
         print("\n")
 
 
-def evaluate_fusion(ltr, lte, prior, cfn, cfp):
-    fusion_models = []
+def evaluate_fusion(ltr, lte, cfn, cfp):
+    fusion_models = ["Tied_GMM+RBF_SVM+LR",
+                     "GMM+RBF_SVM+LR",
+                     "Tied_GMM+Linear_SVM+LR",
+                     "GMM+Linear_SVM+LR",
+                     "Linear_SVM+LR",
+                     "RBF_SVM+LR",
+                     "Tied_GMM+Linear_SVM",
+                     "Tied_GMM+RBF_SVM",
+                     "GMM+Linear_SVM",
+                     "GMM+RBF_SVM"]
+
+    models_desc = ["TMVG",
+                   "LR",
+                   "Linear_SVM",
+                   "RBF_SVM",
+                   "GMM",
+                   "Tied_GMM"]
+
+    train_scores = ["score_models/Tied/Tied_prior_None.npy",
+                    "score_models/LR/LR_l_1e-05_pt_0.5.npy",
+                    "calibrated_score_models/Calibrated_Linear_SVM.npy",
+                    "calibrated_score_models/Calibrated_RBF_SVM.npy",
+                    "calibrated_score_models/Calibrated_GMM.npy",
+                    "score_models/Tied_GMM_/z_score/Tied_GMM_8__pca_11_zscore.npy"]
+
+    test_scores = ["evaluation/scores/TMVG.npy",
+                   "evaluation/scores/LR.npy",
+                   "evaluation/calibrated_scores/Linear_SVM.npy",
+                   "evaluation/calibrated_scores/RBF_SVM.npy",
+                   "evaluation/calibrated_scores/GMM.npy",
+                   "evaluation/scores/Tied_GMM.npy"]
+
+    for f in fusion_models:
+        print(f)
+        models = f.split("+")
+        train_score_list = []
+        test_score_list = []
+        for m in models:
+            index = models_desc.index(m)
+            train_score_list.append(np.load(train_scores[index]))
+            test_score_list.append(np.load(test_scores[index]))
+        fusion_scores = get_evaluation_scores(np.vstack(train_score_list), ltr, np.vstack(test_score_list), lte,
+                                              LR(0, 0.5), fusion=True, model_desc=f)
+        for p in [0.1, 0.5, 0.9]:
+            print(f"{p} => {compute_min_dcf(fusion_scores, lte, p, cfn, cfp)}, ", end="")
+        # plot_bayes_error(fusion_scores, l, cfn, cfp, f)
+        print("\n")
