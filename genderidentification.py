@@ -16,11 +16,11 @@ if __name__ == '__main__':
     cfp = 1
     labels = ["Male", "Female", "All"]
 
-    # evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp)
+    evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp)
 
     # evaluate_fusion(ltr, lte, cfn, cfp)
 
-    evaluate_GMM(dtr, ltr, dte, lte, cfn, cfp)
+    # evaluate_GMM(dtr, ltr, dte, lte, cfn, cfp)
 
     # evaluate_LR(dtr, ltr, dte, lte, cfn, cfp)
 

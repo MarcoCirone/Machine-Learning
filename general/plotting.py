@@ -78,6 +78,7 @@ def scatter_2d(d, l, labels):
                 plt.savefig("figures/scatter_plots/scatter_plot_" + str(i)+"_"+str(j))
                 plt.close()
 
+
 def plot_min_dcfs_svm(min_dcf_list, description, values, pt=None):
     label = "C"
     folder = "SVM"
@@ -95,6 +96,7 @@ def plot_min_dcfs_svm(min_dcf_list, description, values, pt=None):
     plt.savefig(f"figures/{folder}/{description}_pt_{pt}")
     plt.close()
 
+
 def plot_min_dcfs_gmm(min_dcf_list, min_dcf_list_zscore, description, values):
 
     folder = "GMM"
@@ -104,7 +106,7 @@ def plot_min_dcfs_gmm(min_dcf_list, min_dcf_list_zscore, description, values):
 
     plt.bar(np.arange(values), height=min_dcf_list, width=0.3, label="Raw", color="Blue")
     plt.bar(np.arange(values)+0.3, height=min_dcf_list_zscore, width=0.3, label="Zscore", color="Red")
-    plt.xticks([i + 0.15 for i in range(values)],[2**i for i in np.array(range(1,values+1))])
+    plt.xticks([i + 0.15 for i in range(values)], [2**i for i in np.array(range(1, values+1))])
     plt.legend()
     if not os.path.exists("figures/GMM"):
         os.makedirs("figures/GMM")
@@ -112,7 +114,7 @@ def plot_min_dcfs_gmm(min_dcf_list, min_dcf_list_zscore, description, values):
     plt.close()
 
 
-def plot_bayes_error(scores, ltr, cfn, cfp, model_desc):
+def plot_bayes_error(scores, ltr, cfn, cfp, model_desc, train=True):
     effPriorLogOdds = np.linspace(-4, 4, 31)
     k = 0
     dcf = []
@@ -136,8 +138,13 @@ def plot_bayes_error(scores, ltr, cfn, cfp, model_desc):
     plt.xlabel("Threshold")
     plt.ylabel("DCF")
     plt.legend()
-    if not os.path.exists("figures/bayes_error_plots"):
-        os.makedirs("figures/bayes_error_plots")
-    plt.savefig(f"figures/bayes_error_plots/{model_desc}")
+    if train:
+        if not os.path.exists("figures/bayes_error_plots"):
+            os.makedirs("figures/bayes_error_plots")
+        plt.savefig(f"figures/bayes_error_plots/{model_desc}")
+    else:
+        if not os.path.exists("figures/evaluation/bayes_error_plots"):
+            os.makedirs("figures/evaluation/bayes_error_plots")
+        plt.savefig(f"figures/evaluation/bayes_error_plots/{model_desc}")
     plt.show()
 

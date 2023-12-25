@@ -3,7 +3,8 @@ from models.logistic_regression.log_reg_training_models import LR
 from models.svm.svm_training_models import LinearSvm, RbfSvm
 from models.gmm.gmm_training_models import GMM, GMMTied
 from models.calibration.calibration_model import calibrate_scores
-from general.utils import z_score, pca, mrow, compute_min_dcf
+from general.utils import z_score, pca, mrow, compute_min_dcf, compute_dcf, get_confusion_matrix, predict_labels
+from general.plotting import plot_bayes_error
 import numpy as np
 import os
 
@@ -44,26 +45,24 @@ def get_evaluation_scores(dtr, ltr, dte, lte, model, p=None, pca_m=None, zscore=
 def evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp):
     # for each model we store the model itself, the dimension of pca, the presence of z-score, if calibration is used
     # and their description
-    best_models = [(MVGTied(), None, False, False, "TMVG"),
-                   (LR(10**(-5), 0.5), None, False, False, "LR"),
-                   (LinearSvm(1, 1, 0.9), None, False, True, "Linear_SVM"),
-                   (RbfSvm(10**(-3), 10, 1, 0.5), None, False, True, "RBF_SVM"),
-                   (GMM(4), 11, False, True, "GMM"),
-                   (GMMTied(8), 11, True, False, "Tied_GMM")]
+    best_models = [(MVGTied(), None, False, True, "TMVG", "Tied/Tied_prior_None.npy"),
+                   (LR(10 ** (-5), 0.5), None, False, True, "LR", "LR/LR_l_1e-05_pt_0.5.npy"),
+                   (LinearSvm(1, 1, 0.9), None, False, True, "Linear_SVM", "Linear_SVM/raw/Linear_SVM_1_k_1_pt_0.9_.npy"),
+                   (RbfSvm(10 ** (-3), 10, 1, 0.5), None, False, True, "RBF_SVM", "Rbf_SVM/raw/Rbf_SVM_10.0_k_1_pt_0.5_gamma_0.001.npy"),
+                   (GMM(4), 11, False, True, "GMM", "GMM/raw/pca/GMM_4__pca_11.npy"),
+                   (GMMTied(8), 11, True, True, "Tied_GMM", "Tied_GMM_/z_score/Tied_GMM_8__pca_11_zscore.npy")]
 
     for model in best_models:
         print(model[4])
-        # scores = get_evaluation_scores(dtr, ltr, dte, lte, model[0], p=prior, pca_m=model[1], zscore=model[2],
-        #                               calibration=False, fusion=False, model_desc=model[4])
-        scores = np.load(f"evaluation/scores/{model[4]}.npy")
-        if model[3]:
-            #scores = get_evaluation_scores(mrow(np.load(f"calibrated_score_models/Calibrated_{model[4]}.npy")), ltr,
-            #                               mrow(scores), lte, LR(0, prior), p=prior, pca_m=None, zscore=None,
-            #                               calibration=True, fusion=False, model_desc=model[4])
-            scores = np.load(f"evaluation/calibrated_scores/{model[4]}.npy")
-        for p in [0.1, 0.5, 0.9]:
-            print(f"{p} => {compute_min_dcf(scores, lte, p, cfn, cfp)} ", end="")
-        print("\n")
+        scores = get_evaluation_scores(dtr, ltr, dte, lte, model[0], p=prior, pca_m=model[1], zscore=model[2],
+                                       calibration=False, fusion=False, model_desc=model[4])
+        # scores = np.load(f"evaluation/scores/{model[4]}.npy")
+        # if model[3]:
+        calibrated_scores = get_evaluation_scores(mrow(np.load(f"score_models/{model[5]}")), ltr, mrow(scores), lte, LR(0, prior), p=prior,
+                                                  pca_m=None, zscore=False, calibration=True, fusion=False,
+                                                  model_desc=model[4])
+        # calibrated_scores = np.load(f"evaluation/calibrated_scores/{model[4]}.npy")
+        evaluate_calibration(scores, calibrated_scores, lte, cfn, cfp, model_desc=model[4])
 
 
 def evaluate_fusion(ltr, lte, cfn, cfp):
@@ -114,3 +113,23 @@ def evaluate_fusion(ltr, lte, cfn, cfp):
             print(f"{p} => {compute_min_dcf(fusion_scores, lte, p, cfn, cfp)}, ", end="")
         # plot_bayes_error(fusion_scores, l, cfn, cfp, f)
         print("\n")
+
+
+def show_min_act_dcfs(scores, l, cfn, cfp):
+    for p in [0.1, 0.5, 0.9]:
+        pred = predict_labels(scores, -np.log(p / (1 - p)))
+        conf_matrix = get_confusion_matrix(pred, l, 2)
+        print(
+            f"p={p} => minDCF={compute_min_dcf(scores, l, p, cfn, cfp)}, actDCF={compute_dcf(conf_matrix, cfn, cfp, p)}"
+            , end="")
+    print("\n")
+
+
+def evaluate_calibration(scores, calibrated_scores, l, cfn, cfp, model_desc):
+    # print("Normal scores")
+    # show_min_act_dcfs(scores, l, cfn, cfp)
+    # print("Calibrated scores")
+    # show_min_act_dcfs(calibrated_scores, l, cfn, cfp)
+
+    plot_bayes_error(scores, l, cfn, cfp, model_desc, train=False)
+    plot_bayes_error(calibrated_scores, l, cfn, cfp, f"Calibrated_{model_desc}", train=False)
