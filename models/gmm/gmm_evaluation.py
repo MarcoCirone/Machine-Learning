@@ -1,3 +1,4 @@
+
 from models.gmm.gmm_training_models import *
 import numpy as np
 from general.plotting import plot_min_dcfs_gmm_for_evaluation
@@ -61,3 +62,4 @@ def gmm_model(d, l, model,  dte=None, lte=None):
 def evaluation_for_all_gmm(d, l, dte=None, lte=None):
     for model in [GMM(), GMMTied()]:
         gmm_model(d, l, model, dte=dte, lte=lte)
+

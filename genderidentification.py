@@ -1,7 +1,9 @@
 import numpy as np
 from general.plotting import *
 from general.utils import load
-from general.evaluation import evaluate_best_models
+from general.evaluation import evaluate_best_models, evaluate_fusion
+from models.logistic_regression.log_reg_evaluation import evaluate_LR
+from models.gmm.gmm_evaluation import evaluate_GMM
 from models.calibration.calibration_model import show_calibration_results, show_fusion_results
 import scipy.special as sp
 
@@ -16,7 +18,13 @@ if __name__ == '__main__':
 
     evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp)
 
-    show_fusion_results(ltr, prior, cfn, cfp)
+    # evaluate_fusion(ltr, lte, cfn, cfp)
+
+    # evaluate_GMM(dtr, ltr, dte, lte, cfn, cfp)
+
+    # evaluate_LR(dtr, ltr, dte, lte, cfn, cfp)
+
+    # show_fusion_results(ltr, prior, cfn, cfp)
 
     # cross_validation_for_all_svm(dtr, ltr)
 
