@@ -2,7 +2,6 @@ import numpy as np
 import math
 import scipy
 import os
-from models.models import Model
 
 
 def pca(d, n, eigen_values=False):
@@ -81,7 +80,7 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration=False, model_desc=None):     # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
+def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration=False, fusion=False, model_desc=None): # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
     #ti prego pusha
     pca_desc = ""
     z_score_desc = ""
@@ -145,20 +144,14 @@ def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration
         preshuffle_score[idx[i]] = score[i]
 
     if not calibration:
-        if not os.path.exists("score_models/" + model.folder()):
-            os.makedirs("score_models/" + model.folder())
-
-        np.save(f"score_models/{model.folder()}/{model.description()}{pca_desc}{z_score_desc}", preshuffle_score)
-
-        # thresholds = np.concatenate([np.array([-np.inf]), np.sort(score), np.array([np.inf])])
-        # all_dcf = np.zeros(thresholds.shape)
-        #
-        # for i in range(thresholds.shape[0]):
-        #
-        #     pl = predict_labels(preshuffle_score, thresholds[i])
-        #     conf_matrix = get_confusion_matrix(pl, l, l.max() + 1)
-        #
-        #     all_dcf[i] = compute_dcf(conf_matrix, cfn, cfp, p)
+        if not fusion:
+            if not os.path.exists("score_models/" + model.folder()):
+                os.makedirs("score_models/" + model.folder())
+            np.save(f"score_models/{model.folder()}/{model.description()}{pca_desc}{z_score_desc}", preshuffle_score)
+        else:
+            if not os.path.exists("fusion_models"):
+                os.makedirs("fusion_models")
+            np.save(f"fusion_models/{model_desc}", preshuffle_score)
     else:
         preshuffle_score -= np.log(p/(1-p))
         if not os.path.exists("calibrated_score_models"):

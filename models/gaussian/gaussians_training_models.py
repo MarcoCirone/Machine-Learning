@@ -1,6 +1,4 @@
 import numpy as np
-import sys
-sys.path.append("../../")
 from general.utils import mcol, logpdf_GAU_ND
 from models.models import *
 

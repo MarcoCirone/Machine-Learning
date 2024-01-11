@@ -36,6 +36,10 @@ class LR(Model):
     def folder(self):
         return "LR"
 
+    def set_values(self, reg_term, pt):
+        self.reg_term = reg_term
+        self.pt = pt
+
 
 class QLR(LR):
 
