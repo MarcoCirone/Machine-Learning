@@ -56,13 +56,11 @@ def evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp):
         print(model[4])
         scores = get_evaluation_scores(dtr, ltr, dte, lte, model[0], p=prior, pca_m=model[1], zscore=model[2],
                                        calibration=False, fusion=False, model_desc=model[4])
-        # scores = np.load(f"evaluation/scores/{model[4]}.npy")
-        # if model[3]:
-        calibrated_scores = get_evaluation_scores(mrow(np.load(f"score_models/{model[5]}")), ltr, mrow(scores), lte, LR(0, prior), p=prior,
-                                                  pca_m=None, zscore=False, calibration=True, fusion=False,
-                                                  model_desc=model[4])
-        # calibrated_scores = np.load(f"evaluation/calibrated_scores/{model[4]}.npy")
-        evaluate_calibration(scores, calibrated_scores, lte, cfn, cfp, model_desc=model[4])
+        show_min_act_dcfs(scores, lte, cfn, cfp)
+        # calibrated_scores = get_evaluation_scores(mrow(np.load(f"score_models/{model[5]}")), ltr, mrow(scores), lte, LR(0, prior), p=prior,
+        #                                           pca_m=None, zscore=False, calibration=True, fusion=False,
+        #                                           model_desc=model[4])
+        # evaluate_calibration(scores, calibrated_scores, lte, cfn, cfp, model_desc=model[4])
 
 
 def evaluate_fusion(ltr, lte, cfn, cfp):
@@ -109,10 +107,13 @@ def evaluate_fusion(ltr, lte, cfn, cfp):
             test_score_list.append(np.load(test_scores[index]))
         fusion_scores = get_evaluation_scores(np.vstack(train_score_list), ltr, np.vstack(test_score_list), lte,
                                               LR(0, 0.5), fusion=True, model_desc=f)
-        for p in [0.1, 0.5, 0.9]:
-            print(f"{p} => {compute_min_dcf(fusion_scores, lte, p, cfn, cfp)}, ", end="")
+        # for p in [0.1, 0.5, 0.9]:
+        #     print(f"{p} => {compute_min_dcf(fusion_scores, lte, p, cfn, cfp)}, ", end="")
+        # print()
+
+        show_min_act_dcfs(fusion_scores, lte, cfn, cfp)
         # plot_bayes_error(fusion_scores, l, cfn, cfp, f)
-        print("\n")
+        print()
 
 
 def show_min_act_dcfs(scores, l, cfn, cfp):
@@ -120,9 +121,9 @@ def show_min_act_dcfs(scores, l, cfn, cfp):
         pred = predict_labels(scores, -np.log(p / (1 - p)))
         conf_matrix = get_confusion_matrix(pred, l, 2)
         print(
-            f"p={p} => minDCF={compute_min_dcf(scores, l, p, cfn, cfp)}, actDCF={compute_dcf(conf_matrix, cfn, cfp, p)}"
+            f"p={p} => minDCF={compute_min_dcf(scores, l, p, cfn, cfp)}, actDCF={compute_dcf(conf_matrix, cfn, cfp, p)} "
             , end="")
-    print("\n")
+    print()
 
 
 def evaluate_calibration(scores, calibrated_scores, l, cfn, cfp, model_desc):
