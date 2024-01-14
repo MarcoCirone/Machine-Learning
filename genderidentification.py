@@ -3,7 +3,6 @@ from general.plotting import *
 from general.utils import load
 from general.evaluation import evaluate_best_models, evaluate_fusion
 from models.logistic_regression.log_reg_evaluation import evaluate_LR
-from models.gmm.gmm_evaluation import evaluate_GMM
 from models.calibration.calibration_model import show_calibration_results, show_fusion_results
 import scipy.special as sp
 
@@ -14,9 +13,19 @@ if __name__ == '__main__':
     prior = 0.5
     cfn = 1
     cfp = 1
-    labels = ["Male", "Female", "All"]
+    # labels = ["Male", "Female", "All"]
 
-    evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp)
+    scores = [
+        np.load("score_models/Tied/Tied_prior_None.npy"),
+        np.load("score_models/LR/LR_l_1e-05_pt_0.5.npy"),
+        np.load("calibrated_score_models/Calibrated_RBF_SVM.npy"),
+        np.load("score_models/Tied_GMM_/z_score/Tied_GMM_8__pca_11_zscore.npy")
+    ]
+
+    labels = ["TMVG", "LR", "RBF SVM", "Tied GMM"]
+    plot_det_roc(scores, ltr, labels, train=True)
+
+    # evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp)
 
     # evaluate_fusion(ltr, lte, cfn, cfp)
 
