@@ -146,7 +146,68 @@ def plot_min_dcfs_gmm_for_evaluation(min_dcf_list, min_dcf_list_zscore, min_dcf_
     plt.savefig(f"figures/{description}")
     plt.close()
 
+def plot_det_roc(scores, l, labels, train=False):
+    fpr_list = []
+    fnr_list = []
+    tpr_list = []
+    print("starting det/roc computation")
+    for s in scores:
+        thresholds = np.concatenate([np.array([-np.inf]), np.sort(s), np.array([np.inf])])
+        fpr_model = []
+        fnr_model = []
+        tpr_model = []
+        for th in thresholds:
+            pl = predict_labels(s, th)
+            conf_matrix = get_confusion_matrix(pl, l, l.max() + 1)
+            fpr, fnr = conf_matrix[1, 0] / conf_matrix[:, 0].sum(), conf_matrix[0, 1] / conf_matrix[:, 1].sum()
+            tpr = 1 - fnr
+            fpr_model.append(fpr)
+            fnr_model.append(fnr)
+            tpr_model.append(tpr)
+        fpr_list.append(fpr_model)
+        fnr_list.append(fnr_model)
+        tpr_list.append(tpr_model)
+    print("finish det/roc computation")
+    # plot det
+    plt.figure()
+    plt.xlabel("FPR")
+    plt.ylabel("FNR")
+    plt.xscale('log')
+    plt.yscale('log')
 
+    plt.grid(True)
+    for i, (fpr, fnr) in enumerate(zip(fpr_list, fnr_list)):
+        plt.plot(fpr, fnr, label=labels[i])
+    plt.legend()
+    if train:
+        if not os.path.exists("figures"):
+            os.makedirs("figures")
+        plt.savefig(f"figures/det_plots")
+    else:
+        if not os.path.exists("figures/evaluation"):
+            os.makedirs("figures/evaluation")
+        plt.savefig(f"figures/evaluation/det_plots")
+
+    # plot roc
+    plt.figure()
+    plt.xlabel("FPR")
+    plt.ylabel("TPR")
+    plt.xscale('log')
+    plt.yscale('log')
+
+
+    plt.grid(True)
+    for i, (fpr, tpr) in enumerate(zip(fpr_list, tpr_list)):
+        plt.plot(fpr, tpr, label=labels[i])
+    plt.legend()
+    if train:
+        if not os.path.exists("figures"):
+            os.makedirs("figures")
+        plt.savefig(f"figures/roc_plots")
+    else:
+        if not os.path.exists("figures/evaluation"):
+            os.makedirs("figures/evaluation")
+        plt.savefig(f"figures/evaluation/roc_plots")
 
 def plot_bayes_error(scores, ltr, cfn, cfp, model_desc, train=True):
     eff_prior_log_odds = np.linspace(-4, 4, 31)
