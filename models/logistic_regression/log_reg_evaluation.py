@@ -33,4 +33,4 @@ def evaluate_LR(dtr, ltr, dte, lte, cfn, cfp):
     plt.legend()
     if not os.path.exists("figures/evaluation"):
         os.makedirs("figures/evaluation")
-    plt.savefig("figures/evaluation/LR1")
+    plt.savefig("figures/evaluation/LR")
