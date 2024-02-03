@@ -11,6 +11,7 @@ def evaluate_LR(dtr, ltr, dte, lte, cfn, cfp):
     p = [0.1, 0.5, 0.9]
     mins_train = [[], [], []]
     mins_test = [[], [], []]
+    colors = ["red", "yellow", "blue"]
     k = 0
     values = np.logspace(-5, 5, 31)
     for lam in values:
@@ -24,8 +25,8 @@ def evaluate_LR(dtr, ltr, dte, lte, cfn, cfp):
             mins_test[j].append(compute_min_dcf(test_scores, lte, p[j], cfn, cfp))
 
     for i in range(len(mins_train)):
-        plt.plot(values, mins_train[i], label=f"eff_p={p[i]}_train", linestyle="dotted")
-        plt.plot(values, mins_test[i], label=f"eff_p={p[i]}_test")
+        plt.plot(values, mins_train[i], label=f"eff_p={p[i]}_train", linestyle="dotted", colors=colors[i])
+        plt.plot(values, mins_test[i], label=f"eff_p={p[i]}_test", colors=colors[i])
     plt.xscale("log")
     plt.xlabel(label)
     plt.ylabel("minDCF")
