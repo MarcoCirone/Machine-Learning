@@ -15,6 +15,7 @@ if __name__ == '__main__':
     cfp = 1
     # labels = ["Male", "Female", "All"]
 
+
     scores = [
         np.load("score_models/Tied/Tied_prior_None.npy"),
         np.load("score_models/LR/LR_l_1e-05_pt_0.5.npy"),
@@ -27,7 +28,7 @@ if __name__ == '__main__':
 
     # evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp)
 
-    # evaluate_fusion(ltr, lte, cfn, cfp)
+    evaluate_fusion(ltr, lte, cfn, cfp)
 
     # evaluate_GMM(dtr, ltr, dte, lte, cfn, cfp)
 

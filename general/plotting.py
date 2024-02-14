@@ -214,8 +214,8 @@ def plot_bayes_error(scores, ltr, cfn, cfp, model_desc, train=True):
     k = 0
     dcf = []
     mindcf = []
-    for e in effPriorLogOdds:
-        # print(k)
+    for e in eff_prior_log_odds:
+        print(k)
         k += 1
         # CALCOLO DCF EFFETTIVO
         pi = 1 / (1 + np.exp(-e))
