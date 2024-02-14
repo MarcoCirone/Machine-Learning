@@ -24,7 +24,7 @@ def z_score(dtr, dte=None):
     return dtr, dte
 
 
-def lda(d, l, n):
+def lda(d, l, n=1):
     mu = mcol(d.mean(axis=1))
     sb = np.zeros((d.shape[0], d.shape[0]))
     sw = np.zeros((d.shape[0], d.shape[0]))
@@ -80,8 +80,8 @@ def logpdf_GAU_ND(d, mu, cov):
     return np.hstack(log_densities)
 
 
-def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration=False, fusion=False, model_desc=None): # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
-    #ti prego pusha
+def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration=False, fusion=False, model_desc=None):  # svm_params è c se lineare, parametri se kernel polinomiale, gamma se kernel rbf
+
     pca_desc = ""
     z_score_desc = ""
 
@@ -89,7 +89,7 @@ def k_fold(d, l, k, model, p=None, seed=0, pca_m=None, zscore=False, calibration
 
     k = math.ceil(d.shape[1] / n_test)
 
-    np.random.seed(seed)  # se eseguo il codice 2 volte il risultato non cambia
+    np.random.seed(seed)
     idx = np.random.permutation(d.shape[1])
 
     rd = d[:, idx]  # reordered dataset

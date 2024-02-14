@@ -45,14 +45,14 @@ def get_evaluation_scores(dtr, ltr, dte, lte, model, p=None, pca_m=None, zscore=
 def evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp):
     # for each model we store the model itself, the dimension of pca, the presence of z-score, if calibration is used
     # and their description
-    best_models = [#(MVGTied(), None, False, True, "TMVG", "Tied/Tied_prior_None.npy"),
-                   #(LR(10 ** (-5), 0.5), None, False, True, "LR", "LR/LR_l_1e-05_pt_0.5.npy"),
-                   #(LinearSvm(1, 1, 0.9), None, False, True, "Linear_SVM", "Linear_SVM/raw/Linear_SVM_1_k_1_pt_0.9_.npy"),
+    best_models = [(MVGTied(), None, False, True, "TMVG", "Tied/Tied_prior_None.npy"),
+                   (LR(10 ** (-5), 0.5), None, False, True, "LR", "LR/LR_l_1e-05_pt_0.5.npy"),
+                   (LinearSvm(1, 1, 0.9), None, False, True, "Linear_SVM", "Linear_SVM/raw/Linear_SVM_1_k_1_pt_0.9_.npy"),
                    (RbfSvm(10 ** (-3), 10, 1, 0.5), None, False, True, "RBF_SVM", "Rbf_SVM/raw/Rbf_SVM_10.0_k_1_pt_0.5_gamma_0.001.npy"),
-                   #(GMM(4), 11, False, True, "GMM", "GMM/raw/pca/GMM_4__pca_11.npy"),
-                   #(GMMTied(8), 11, True, True, "Tied_GMM", "Tied_GMM_/z_score/Tied_GMM_8__pca_11_zscore.npy"),
-                   #(GMMTied(4), 11, True, True, "Tied_GMM_4", "Tied_GMM_/z_score/Tied_GMM_4__pca_11_zscore.npy"),
-                   ]#(GMM(4), 11, True, True, "GMM_New", "GMM/z_score/GMM_4__pca_11_zscore.npy")]
+                   (GMM(4), 11, False, True, "GMM", "GMM/raw/pca/GMM_4__pca_11.npy"),
+                   (GMMTied(8), 11, True, True, "Tied_GMM", "Tied_GMM_/z_score/Tied_GMM_8__pca_11_zscore.npy"),
+                   (GMMTied(4), 11, True, True, "Tied_GMM_4", "Tied_GMM_/z_score/Tied_GMM_4__pca_11_zscore.npy"),
+                   (GMM(4), 11, True, True, "GMM_New", "GMM/z_score/GMM_4__pca_11_zscore.npy")]     # the last two rows are for the final best GMM models
 
     for model in best_models:
         print(model[4])
@@ -70,8 +70,8 @@ def evaluate_fusion(ltr, lte, cfn, cfp):
                      "GMM_New+RBF_SVM+LR",
                      "Tied_GMM_4+Linear_SVM+LR",
                      "GMM_New+Linear_SVM+LR",
-                     #"Linear_SVM+LR",
-                     #"RBF_SVM+LR",
+                     "Linear_SVM+LR",
+                     "RBF_SVM+LR",
                      "Tied_GMM_4+Linear_SVM",
                      "Tied_GMM_4+RBF_SVM",
                      "GMM_New+Linear_SVM",
@@ -109,9 +109,6 @@ def evaluate_fusion(ltr, lte, cfn, cfp):
             test_score_list.append(np.load(test_scores[index]))
         fusion_scores = get_evaluation_scores(np.vstack(train_score_list), ltr, np.vstack(test_score_list), lte,
                                               LR(0, 0.5), fusion=True, model_desc=f)
-        # for p in [0.1, 0.5, 0.9]:
-        #     print(f"{p} => {compute_min_dcf(fusion_scores, lte, p, cfn, cfp)}, ", end="")
-        # print()
 
         show_min_act_dcfs(fusion_scores, lte, cfn, cfp)
         plot_bayes_error(fusion_scores, lte, cfn, cfp, f, train=False)
@@ -122,16 +119,11 @@ def show_min_act_dcfs(scores, l, cfn, cfp):
     for p in [0.1, 0.5, 0.9]:
         pred = predict_labels(scores, -np.log(p / (1 - p)))
         conf_matrix = get_confusion_matrix(pred, l, 2)
-        print(
-            f"p={p} => minDCF={compute_min_dcf(scores, l, p, cfn, cfp)}, actDCF={compute_dcf(conf_matrix, cfn, cfp, p)} "
-            , end="")
+        print(f"p={p} => minDCF={compute_min_dcf(scores, l, p, cfn, cfp)}, actDCF={compute_dcf(conf_matrix, cfn, cfp, p)} ", end="")
     print()
 
 
 def evaluate_calibration(scores, calibrated_scores, l, cfn, cfp, model_desc):
-    # print("Normal scores")
-    # show_min_act_dcfs(scores, l, cfn, cfp)
-    # print("Calibrated scores")
     show_min_act_dcfs(calibrated_scores, l, cfn, cfp)
 
     plot_bayes_error(scores, l, cfn, cfp, model_desc, train=False)

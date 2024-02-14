@@ -1,15 +1,15 @@
 from models.gaussian.gaussians_training_models import *
 import numpy as np
-from general.utils import k_fold
+from general.utils import k_fold, compute_min_dcf
 
 def compute_gaussian(d, l, model, zscore, pca):
+    prior = [0.5, 0.1, 0.9]
     cfn = 1
     cfp = 1
 
-    prior = [0.5, 0.1, 0.9]
-
     for p in prior:
-        min_dcf = k_fold(d, l, 5, model, p, cfn, cfp, seed=27, zscore=zscore, pca_m=pca)
+        scores = k_fold(d, l, 5, model, p, seed=27, zscore=zscore, pca_m=pca)
+        min_dcf = compute_min_dcf(scores, l, p, cfn, cfp)
         print(f"prior = {p}, min_dcf = {min_dcf}")
 
 def gaussians_pca(d, l, model, zscore=False):

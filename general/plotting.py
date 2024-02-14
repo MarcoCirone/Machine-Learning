@@ -9,7 +9,7 @@ sys.path.append("./")
 from general.utils import k_fold, pca
 
 
-def hist(d, l, labels):
+def hist(d, l, labels, name):
     for i in range(d.shape[0]):
         plt.figure()
         for c in range(2):
@@ -17,7 +17,7 @@ def hist(d, l, labels):
             plt.hist(x.reshape(x.size, ), alpha=0.4, label=labels[c], bins=70, density=True, linewidth=1.0)
         plt.xlabel(f'Dimension {i + 1}')
         plt.legend()
-        plt.savefig("figures/lda_histograms_" + str(i))
+        plt.savefig("figures/"+name + str(i))
         plt.close()
 
 
@@ -95,7 +95,6 @@ def plot_min_dcfs_svm(min_dcf_list, description, values, pt=None):
     plt.legend()
     plt.savefig(f"figures/{folder}/{description}_pt_{pt}")
     plt.close()
-
 
 
 def plot_min_dcfs_svm_for_evaluation(min_dcf_list1, min_dcf_list2, description, values):
@@ -194,7 +193,6 @@ def plot_det_roc(scores, l, labels, train=False):
     plt.ylabel("TPR")
     plt.xscale('log')
     plt.yscale('log')
-
 
     plt.grid(True)
     for i, (fpr, tpr) in enumerate(zip(fpr_list, tpr_list)):
