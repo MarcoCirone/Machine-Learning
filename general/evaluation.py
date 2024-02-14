@@ -66,37 +66,37 @@ def evaluate_best_models(dtr, ltr, dte, lte, prior, cfn, cfp):
 
 
 def evaluate_fusion(ltr, lte, cfn, cfp):
-    fusion_models = ["Tied_GMM+RBF_SVM+LR",
-                     "GMM+RBF_SVM+LR",
-                     "Tied_GMM+Linear_SVM+LR",
-                     "GMM+Linear_SVM+LR",
-                     "Linear_SVM+LR",
-                     "RBF_SVM+LR",
-                     "Tied_GMM+Linear_SVM",
-                     "Tied_GMM+RBF_SVM",
-                     "GMM+Linear_SVM",
-                     "GMM+RBF_SVM"]
+    fusion_models = ["Tied_GMM_4+RBF_SVM+LR",
+                     "GMM_New+RBF_SVM+LR",
+                     "Tied_GMM_4+Linear_SVM+LR",
+                     "GMM_New+Linear_SVM+LR",
+                     #"Linear_SVM+LR",
+                     #"RBF_SVM+LR",
+                     "Tied_GMM_4+Linear_SVM",
+                     "Tied_GMM_4+RBF_SVM",
+                     "GMM_New+Linear_SVM",
+                     "GMM_New+RBF_SVM"]
 
     models_desc = ["TMVG",
                    "LR",
                    "Linear_SVM",
                    "RBF_SVM",
-                   "GMM",
-                   "Tied_GMM"]
+                   "GMM_New",
+                   "Tied_GMM_4"]
 
     train_scores = ["score_models/Tied/Tied_prior_None.npy",
                     "score_models/LR/LR_l_1e-05_pt_0.5.npy",
                     "calibrated_score_models/Calibrated_Linear_SVM.npy",
                     "calibrated_score_models/Calibrated_RBF_SVM.npy",
-                    "score_models/GMM/raw/pca/GMM_4__pca_11.npy",
-                    "score_models/Tied_GMM_/raw/pca/Tied_GMM_4__pca_11.npy"]
+                    "score_models/GMM/z_score/GMM_4__pca_11_zscore.npy",
+                    "score_models/Tied_GMM_/z_score/Tied_GMM_4__pca_11_zscore.npy"]
 
     test_scores = ["evaluation/scores/TMVG.npy",
                    "evaluation/scores/LR.npy",
                    "evaluation/calibrated_scores/Linear_SVM.npy",
                    "evaluation/calibrated_scores/RBF_SVM.npy",
-                   "evaluation/scores/GMM.npy",
-                   "evaluation/scores/Tied_GMM.npy"]
+                   "evaluation/scores/GMM_New.npy",
+                   "evaluation/scores/Tied_GMM_4.npy"]
 
     for f in fusion_models:
         print(f)
